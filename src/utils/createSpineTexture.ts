@@ -9,8 +9,8 @@ const BOOK_FONTS = [
   'EB Garamond',
   // Sans-serif fonts
   'Montserrat',
-    'Inter',
-    'Arial'
+  'Inter',
+  'Arial'
 ]
 
 // Create a promise that resolves when fonts are loaded
@@ -41,62 +41,68 @@ function getContrastTextColor(bgColor: string): string {
   const r = parseInt(hex.substr(0, 2), 16) / 255
   const g = parseInt(hex.substr(2, 2), 16) / 255
   const b = parseInt(hex.substr(4, 2), 16) / 255
-  
+
   // Calculate relative luminance
   const luminance = 0.299 * r + 0.587 * g + 0.114 * b
-  
+
   // Use white text for darker backgrounds
   return luminance < 0.5 ? '#FFFFFF' : '#000000'
 }
 
 // Create textures with the book title
 async function createSpineTextures(
-  title: string, 
-  bgColor: string, 
-  depth: number, 
+  title: string,
+  bgColor: string,
+  depth: number,
   height: number
-): Promise<{ colorTexture: THREE.CanvasTexture; bumpTexture: THREE.CanvasTexture }> {
+): Promise<{ colorTexture: THREE.CanvasTexture }> {
   // Wait for fonts to load before proceeding
   await fontsLoaded
 
   const colorCanvas = document.createElement('canvas')
   const colorCtx = colorCanvas.getContext('2d')!
   const aspectRatio = height / depth
-  
+
   // Select a random font for this book
   const bookFont = getRandomFont()
-  console.log(`Creating spine texture for "${title}" using font: ${bookFont}`)
-  
-  // Set canvas size based on the spine dimensions
-  colorCanvas.width = 512  // Width for spine depth
-  colorCanvas.height = Math.floor(512 * aspectRatio) // Height proportional to book height
-  
-  // Create bump map canvas with same dimensions
+  // console.log(`Creating spine texture for "${title}" using font: ${bookFont}`) // Optional: remove log spam
+
+  // Set canvas size based on the spine dimensions - REDUCED RESOLUTION
+  colorCanvas.width = 256  // REDUCED Width for spine depth
+  colorCanvas.height = Math.floor(256 * aspectRatio) // Height proportional to book height
+
+  // Remove bump map canvas creation
+  /*
   const bumpCanvas = document.createElement('canvas')
   const bumpCtx = bumpCanvas.getContext('2d')!
   bumpCanvas.width = colorCanvas.width
   bumpCanvas.height = colorCanvas.height
-  
+  */
+
   // Fill background
   colorCtx.fillStyle = bgColor
   colorCtx.fillRect(0, 0, colorCanvas.width, colorCanvas.height)
-  
-  // Fill bump map background with white (full height)
+
+  // Remove bump map background fill
+  /*
   bumpCtx.fillStyle = 'white'
   bumpCtx.fillRect(0, 0, bumpCanvas.width, bumpCanvas.height)
-  
+  */
+
   // Set up text
   const textColor = getContrastTextColor(bgColor)
   colorCtx.fillStyle = textColor
   colorCtx.textAlign = 'center'
   colorCtx.textBaseline = 'middle'
-  
-  // Set up bump map text (black for sunken effect)
+
+  // Remove bump map text setup
+  /*
   bumpCtx.fillStyle = 'black'
   bumpCtx.textAlign = 'center'
   bumpCtx.textBaseline = 'middle'
-  
-  // Function to measure text and check if it fits
+  */
+
+  // Function to measure text and check if it fits (only needs colorCtx now)
   const measureText = (text: string, size: number) => {
     colorCtx.font = `${size}px ${bookFont}`
     const metrics = colorCtx.measureText(text)
@@ -110,22 +116,22 @@ async function createSpineTextures(
   // Calculate initial font size - start smaller to maintain proportions
   const spineDepth = colorCanvas.width * 0.8 // Target 80% of spine depth
   let fontSize = Math.max(spineDepth, 120) // Initial max size
-  
+
   // First pass: Find font size that maintains proper aspect ratio
   let metrics = measureText('X', fontSize) // Use 'X' as reference character
   const targetAspectRatio = 1 // Ideal aspect ratio for the font
-  
+
   while (fontSize > 20) {
     metrics = measureText('X', fontSize)
     const currentAspectRatio = metrics.width / metrics.height
-    
+
     // If aspect ratio is within 10% of target, break
     if (Math.abs(currentAspectRatio - targetAspectRatio) < 0.1) {
       break
     }
     fontSize -= 5
   }
-  
+
   // Now check if the actual text fits within our bounds
   metrics = measureText(title, fontSize)
   const maxWidth = colorCanvas.height * 0.9 // Max width for text
@@ -136,7 +142,7 @@ async function createSpineTextures(
   if (metrics.width > maxWidth) {
     // Scale down single line to fit
     finalFontSize = Math.floor((maxWidth / metrics.width) * fontSize)
-    
+
     // If still too large for spine depth, try wrapping
     metrics = measureText(title, finalFontSize)
     if (finalFontSize > spineDepth * 0.9) {
@@ -146,7 +152,7 @@ async function createSpineTextures(
       let currentLine = ''
       let bestLines: string[] = []
       let bestLineLength = Infinity
-      
+
       // Try different word combinations to find optimal line breaks
       for (let i = 0; i < words.length; i++) {
         if (currentLine === '') {
@@ -154,7 +160,7 @@ async function createSpineTextures(
         } else {
           const testLine = currentLine + ' ' + words[i]
           const testMetrics = measureText(testLine, finalFontSize)
-          
+
           if (testMetrics.width <= maxWidth) {
             currentLine = testLine
           } else {
@@ -162,37 +168,37 @@ async function createSpineTextures(
             currentLine = words[i]
           }
         }
-        
+
         // If we're at the last word, add the remaining line
         if (i === words.length - 1) {
           lines.push(currentLine)
         }
-        
+
         // Check if this arrangement is better balanced
         if (i === words.length - 1) {
           const lineWidths = lines.map(line => measureText(line, finalFontSize).width)
           const widthVariance = Math.max(...lineWidths) - Math.min(...lineWidths)
-          
+
           if (lines.length < bestLineLength || (lines.length === bestLineLength && widthVariance < bestLineLength)) {
             bestLines = [...lines]
             bestLineLength = lines.length
           }
         }
       }
-      
+
       lines = bestLines
-      
+
       // Adjust font size for multiple lines with better width utilization
       finalFontSize = Math.min(
         finalFontSize,
         (colorCanvas.width * 0.9) / lines.length,
         // Scale based on average line length to better utilize width
-        (maxWidth * 0.95) / (lines.reduce((sum, line) => 
+        (maxWidth * 0.95) / (lines.reduce((sum, line) =>
           sum + measureText(line, finalFontSize).width / finalFontSize, 0) / lines.length)
       )
     }
   }
-  
+
   // Final size check and adjustment
   let maxLineWidth = 0
   let minLineWidth = maxWidth
@@ -204,7 +210,7 @@ async function createSpineTextures(
       maxLineWidth = Math.max(maxLineWidth, lineMetrics.width)
       minLineWidth = Math.min(minLineWidth, lineMetrics.width)
     })
-    
+
     // If any line is too wide, reduce size
     if (maxLineWidth > maxWidth) {
       finalFontSize = Math.floor((maxWidth / maxLineWidth) * finalFontSize)
@@ -218,52 +224,60 @@ async function createSpineTextures(
 
   // Ensure final size doesn't exceed spine depth
   finalFontSize = Math.min(finalFontSize, spineDepth * 0.9)
-  
-  // Set final font size for both canvases
+
+  // Set final font size for color canvas
   colorCtx.font = `${finalFontSize}px ${bookFont}`
-  bumpCtx.font = `${finalFontSize}px ${bookFont}`
-  
-  // Draw text on both canvases
+  // Remove bumpCtx font setting
+  // bumpCtx.font = `${finalFontSize}px ${bookFont}`
+
+  // Draw text on color canvas
   colorCtx.save()
-  bumpCtx.save()
-  
+  // Remove bumpCtx save
+  // bumpCtx.save()
+
   colorCtx.translate(colorCanvas.width / 2, colorCanvas.height / 2)
-  bumpCtx.translate(bumpCanvas.width / 2, bumpCanvas.height / 2)
-  
+  // Remove bumpCtx translate
+  // bumpCtx.translate(bumpCanvas.width / 2, bumpCanvas.height / 2)
+
   colorCtx.rotate(Math.PI / 2)
-  bumpCtx.rotate(Math.PI / 2)
-  
+  // Remove bumpCtx rotate
+  // bumpCtx.rotate(Math.PI / 2)
+
   // Draw text with minimal line spacing
   const lineSpacing = 0.9 // Keep the tight line spacing
   const lineHeight = finalFontSize * lineSpacing
   const totalHeight = lines.length * lineHeight
   const startY = -(totalHeight / 2) + (lineHeight / 2)
-  
+
   lines.forEach((line, index) => {
     colorCtx.fillText(line, 0, startY + (index * lineHeight))
-    bumpCtx.fillText(line, 0, startY + (index * lineHeight))
+    // Remove bumpCtx fillText
+    // bumpCtx.fillText(line, 0, startY + (index * lineHeight))
   })
-  
+
   colorCtx.restore()
-  bumpCtx.restore()
-  
-  // Create textures with proper wrapping
+  // Remove bumpCtx restore
+  // bumpCtx.restore()
+
+  // Create texture with proper wrapping
   const colorTexture = new THREE.CanvasTexture(colorCanvas)
   colorTexture.wrapS = THREE.ClampToEdgeWrapping
   colorTexture.wrapT = THREE.ClampToEdgeWrapping
   colorTexture.needsUpdate = true
-  
+
+  // Remove bumpTexture creation
+  /*
   const bumpTexture = new THREE.CanvasTexture(bumpCanvas)
   bumpTexture.wrapS = THREE.ClampToEdgeWrapping
   bumpTexture.wrapT = THREE.ClampToEdgeWrapping
   bumpTexture.needsUpdate = true
+  */
 
-  console.log(`Created textures for "${title}":`, {
-    colorTexture: colorTexture.uuid,
-    bumpTexture: bumpTexture.uuid
-  })
-  
-  return { colorTexture, bumpTexture }
+  // console.log(`Created texture for "${title}":`, { // Optional: update log
+  //   colorTexture: colorTexture.uuid,
+  // })
+
+  // Update return value
+  return { colorTexture }
 }
-
 export { createSpineTextures }

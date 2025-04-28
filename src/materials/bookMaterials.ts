@@ -22,10 +22,10 @@ export function createCoverMaterial(color: string, texture?: THREE.Texture): THR
 
 export function createSpineMaterial(
   color: string,
-  textures: { colorTexture: THREE.CanvasTexture; bumpTexture: THREE.CanvasTexture } | null
+  textures: { colorTexture: THREE.CanvasTexture } | null
 ): THREE.MeshPhysicalMaterial {
   if (!textures) {
-    return new THREE.MeshPhysicalMaterial({ 
+    return new THREE.MeshPhysicalMaterial({
       color,
       roughness: 0.6,
       metalness: 0.1,
@@ -34,15 +34,13 @@ export function createSpineMaterial(
       side: THREE.DoubleSide
     })
   }
-  
+
   return new THREE.MeshPhysicalMaterial({
     map: textures.colorTexture,
-    bumpMap: textures.bumpTexture,
     roughness: 0.6,
     metalness: 0.1,
     clearcoat: 0.3,
     clearcoatRoughness: 0.6,
-    bumpScale: -0.04,
     side: THREE.DoubleSide
   })
 }
