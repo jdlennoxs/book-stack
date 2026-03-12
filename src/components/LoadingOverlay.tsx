@@ -20,7 +20,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ isLoading }) => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            zIndex: 1001, // Ensure it's above the info box but below the controls
+            zIndex: 999, // Below header but above canvas
             color: 'white',
             fontSize: '1.5em',
             fontFamily: 'Inter, system-ui, sans-serif',

@@ -1,5 +1,5 @@
-import { BookImage } from './BookImage';
 import { BookData } from '../Book';
+import { ModernBookCard } from './ModernBookCard';
 
 type BookGalleryProps = {
   books: BookData[];
@@ -8,51 +8,25 @@ type BookGalleryProps = {
 export function BookGallery({ books }: BookGalleryProps) {
   return (
     <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-      gap: '2rem',
-      padding: '2rem',
+      width: '100%',
+      height: '100%',
+      backgroundColor: '#F3F4F6', // Subtle off-white/gray background
+      overflowY: 'auto', // Allow scrolling on the wrapper
     }}>
-      {books.map((bookData) => (
-        <div key={bookData.book.title} style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '1rem',
-          padding: '1rem',
-          backgroundColor: '#fff',
-          borderRadius: '8px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        }}>
-          {bookData.book.image && (
-            <BookImage
-              imageUrl={bookData.book.image.url}
-              alt={bookData.book.title}
-              width={200}
-              height={320}
-              className="book-cover"
-            />
-          )}
-          <h3 style={{
-            margin: 0,
-            fontSize: '1rem',
-            textAlign: 'center',
-            color: '#333',
-          }}>
-            {bookData.book.title}
-          </h3>
-          <p style={{
-            margin: 0,
-            fontSize: '0.875rem',
-            color: '#666',
-          }}>
-            {bookData.book.cached_contributors
-              .filter(c => !c.contribution || c.contribution === 'Author')
-              .map(c => c.author.name)
-              .join(', ')}
-          </p>
-        </div>
-      ))}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+        gap: '2.5rem',
+        padding: '6rem 3rem 3rem 3rem', // Extra top padding for navbar
+        width: '100%',
+        maxWidth: '1600px', // Prevent it from stretching too far on ultrawide
+        margin: '0 auto', // Center it
+        boxSizing: 'border-box',
+      }}>
+        {books.map((bookData) => (
+          <ModernBookCard key={bookData.book.title} bookData={bookData} />
+        ))}
+      </div>
     </div>
   );
 } 

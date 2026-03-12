@@ -17,36 +17,22 @@ export type BookData = {
   date_added: string
   read_count: number
   updated_at: string
+  rating?: number
   book: {
     user_added: boolean
     title: string
+    id?: number
     image: {
+      id?: number
       url: string
       color: string
       height: number
       width: number
+      color_name?: string
     } | null
     pages: number | null
     images: never[]
-    editions: {
-      pages: number | null
-    }[]
-    cached_contributors: {
-      author: {
-        id: number
-        slug: string
-        name: string
-        image: {
-          id?: number
-          url?: string
-          color?: string
-          width?: number
-          height?: number
-          color_name?: string
-        } | null
-      }
-      contribution: string | null
-    }[]
+    cached_contributors: string | null
   }
 }
 
@@ -54,12 +40,13 @@ type BookProps = {
   position: [number, number, number]
   data: BookData
   onHover: (isHovered: boolean) => void
+  onClick?: () => void
   isPhysicsEnabled: boolean
   onLoad?: () => void
+  index?: number
 }
 
-// Book component with worn corners
-function BookComponent(props: BookProps) {
+function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onLoad, index = 0 }: BookProps) {
   const meshRef = useRef<THREE.Group>(null!)
   const isLoadedRef = useRef(false); // Ref to track if onLoad has been called for this instance
   const [textures, setTextures] = useState<{
@@ -68,37 +55,36 @@ function BookComponent(props: BookProps) {
   const [detailedTexturesLoaded, setDetailedTexturesLoaded] = useState(false); // State for lazy loading
 
   // Load the cover texture using proxy and useTexture
-  const coverUrl = useMemo(() => {
-    return props.data.book.image?.url
-      ? config.getProxiedImageUrl(props.data.book.image.url)
-      : '/cover.jpeg';
-  }, [props.data.book.image?.url]);
+  const coverUrl = data.book.image?.url
+    ? config.getProxiedImageUrl(data.book.image.url)
+    : '/cover.jpeg';
 
-  const coverTexture = useTexture(coverUrl);
-  useEffect(() => {
-    if (coverTexture) {
-      coverTexture.colorSpace = THREE.SRGBColorSpace;
-    }
-  }, [coverTexture]);
+  const rawCoverTexture = useTexture(coverUrl);
+  const coverTexture = useMemo(() => {
+    if (!rawCoverTexture) return rawCoverTexture;
+    const cloned = rawCoverTexture.clone();
+    cloned.colorSpace = THREE.SRGBColorSpace;
+    return cloned;
+  }, [rawCoverTexture]);
 
-  const pageCount = getPageCount(props.data)
+  const pageCount = getPageCount(data)
   const baseWidth = calculateBaseWidth(pageCount)
   const depth = calculateBookDepth(pageCount)
 
-  const height = baseWidth * ((props.data.book.image?.height ?? 200) / (props.data.book.image?.width ?? 100))
+  const height = baseWidth * ((data.book.image?.height ?? 200) / (data.book.image?.width ?? 100))
 
   // Create materials
   const transparentMaterial = useMemo(() => createTransparentMaterial(), [])
-  const coverMaterial = useMemo(() => createCoverMaterial(props.data.book.image?.color || '#FFFFFF'), [props.data.book.image?.color])
-  const frontCoverMaterial = useMemo(() => createCoverMaterial(props.data.book.image?.color || '#FFFFFF', coverTexture), [props.data.book.image?.color, coverTexture])
-  const spineMaterial = useMemo(() => createSpineMaterial(props.data.book.image?.color || '#FFFFFF', textures), [textures, props.data.book.image?.color])
+  const coverMaterial = useMemo(() => createCoverMaterial(data.book.image?.color || '#FFFFFF'), [data.book.image?.color])
+  const frontCoverMaterial = useMemo(() => createCoverMaterial(data.book.image?.color || '#FFFFFF', coverTexture), [data.book.image?.color, coverTexture])
+  const spineMaterial = useMemo(() => createSpineMaterial(data.book.image?.color || '#FFFFFF', textures), [textures, data.book.image?.color])
   const pageMaterial = useMemo(() => createPageMaterial(), [])
 
   useEffect(() => {
     // Use the ref to ensure onLoad is called only once per instance lifetime
     const tryCallOnLoad = () => {
       if (!isLoadedRef.current) {
-        props.onLoad?.();
+        onLoad?.();
         isLoadedRef.current = true; // Set the ref
       }
     };
@@ -109,25 +95,29 @@ function BookComponent(props: BookProps) {
     // For now, let's assume instance maps to one book load lifecycle.
 
     const loadTextures = async () => {
-      const title = props.data.book.title || 'Untitled';
+      const title = data.book.title || 'Untitled';
+
+      // Stagger by index to avoid all books hammering the GPU/network at once
+      // Each book waits a little longer before generating its spine texture
+      const staggerDelay = index * 5
+      if (staggerDelay > 0) {
+        await new Promise(resolve => setTimeout(resolve, staggerDelay));
+      }
 
       try {
-        // Simulate potential delay for texture generation/loading if needed for testing
-        // await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
-
         const newTextures = await createSpineTextures(
           title,
-          props.data.book.image?.color || '#FFFFFF',
+          data.book.image?.color || '#FFFFFF',
           depth,
           height
         );
         setTextures(newTextures);
         setDetailedTexturesLoaded(true);
-        tryCallOnLoad(); // Call onLoad on success
+        tryCallOnLoad();
       } catch (error) {
         console.error("Failed to create spine textures:", error);
-        setDetailedTexturesLoaded(true); // Still mark as loaded to avoid blocking
-        tryCallOnLoad(); // Call onLoad on error
+        setDetailedTexturesLoaded(true);
+        tryCallOnLoad();
       }
     };
 
@@ -140,8 +130,10 @@ function BookComponent(props: BookProps) {
       if (coverTexture.image) {
         loadTextures();
       } else {
-        setDetailedTexturesLoaded(true);
-        tryCallOnLoad();
+        setTimeout(() => {
+          setDetailedTexturesLoaded(true);
+          tryCallOnLoad();
+        }, 0);
       }
     } else {
       const timer = setTimeout(() => {
@@ -153,19 +145,19 @@ function BookComponent(props: BookProps) {
       }, 10);
       return () => clearTimeout(timer);
     }
-  }, [props.data.book.title, props.data.book.image?.color, depth, height, coverTexture, props.onLoad]);
+  }, [data.book.title, data.book.image?.color, depth, height, coverTexture, onLoad, detailedTexturesLoaded]);
 
-  // Don't render anything until textures are considered loaded
-  if (!detailedTexturesLoaded) {
-    return null;
-  }
 
-  const BookContent = () => (
+  const bookContentNode = (
     <group
       rotation={[-Math.PI / 2, 0, Math.PI / 2]}
       ref={meshRef}
-      onPointerOver={() => props.onHover(true)}
-      onPointerOut={() => props.onHover(false)}
+      onPointerOver={() => onHover(true)}
+      onPointerOut={() => onHover(false)}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (onClick) onClick();
+      }}
     >
       {/* Outer book cover */}
       <Box args={[baseWidth + 0.01, height + 0.01, depth + 0.01]} position={[0, depth / 2, 0]} castShadow>
@@ -189,21 +181,21 @@ function BookComponent(props: BookProps) {
     </group>
   )
 
-  if (props.isPhysicsEnabled) {
+  if (isPhysicsEnabled) {
     return (
       <RigidBody
-        position={props.position}
+        position={position}
         colliders="cuboid"
         restitution={0}
         friction={0.4}
       >
-        <BookContent />
+        {bookContentNode}
       </RigidBody>
     )
   } else {
     return (
-      <group position={props.position}>
-        <BookContent />
+      <group position={position}>
+        {bookContentNode}
       </group>
     )
   }

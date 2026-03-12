@@ -118,12 +118,11 @@ async function createSpineTextures(
   let fontSize = Math.max(spineDepth, 120) // Initial max size
 
   // First pass: Find font size that maintains proper aspect ratio
-  let metrics = measureText('X', fontSize) // Use 'X' as reference character
   const targetAspectRatio = 1 // Ideal aspect ratio for the font
 
   while (fontSize > 20) {
-    metrics = measureText('X', fontSize)
-    const currentAspectRatio = metrics.width / metrics.height
+    const loopMetrics = measureText('X', fontSize)
+    const currentAspectRatio = loopMetrics.width / loopMetrics.height
 
     // If aspect ratio is within 10% of target, break
     if (Math.abs(currentAspectRatio - targetAspectRatio) < 0.1) {
@@ -133,7 +132,7 @@ async function createSpineTextures(
   }
 
   // Now check if the actual text fits within our bounds
-  metrics = measureText(title, fontSize)
+  const metrics = measureText(title, fontSize)
   const maxWidth = colorCanvas.height * 0.9 // Max width for text
   let lines = [title]
   let finalFontSize = fontSize
@@ -144,7 +143,6 @@ async function createSpineTextures(
     finalFontSize = Math.floor((maxWidth / metrics.width) * fontSize)
 
     // If still too large for spine depth, try wrapping
-    metrics = measureText(title, finalFontSize)
     if (finalFontSize > spineDepth * 0.9) {
       // Try wrapping text with improved width utilization
       lines = []

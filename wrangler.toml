@@ -1,0 +1,16 @@
+name = "book-stack-worker"
+main = "worker.js"
+compatibility_date = "2024-03-12"
+
+# Local development variables
+[vars]
+# HARDCOVER_API_TOKEN = "your-token-here" (set this in .dev.vars for local dev)
+
+# Rate Limiting configuration (requires a plan that supports it)
+# If you are on the Free plan, you might need to use the Cloudflare Dashboard 
+# or a KV-based approach for strict global limiting.
+# However, this is the standard way to define it in wrangler.toml:
+[[rate_limiting]]
+binding = "RATE_LIMITER"
+limit = 60
+period = 60
