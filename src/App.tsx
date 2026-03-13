@@ -1,6 +1,6 @@
 import { useMemo, useState, Suspense, useCallback, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Preload } from '@react-three/drei'
+import { Preload } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
 import './App.css'
 import { getComparison } from './utils/heightComparisons'
@@ -15,22 +15,37 @@ import LoadingOverlay from './components/LoadingOverlay'
 import { ModernBookCard } from './components/ModernBookCard'
 import { config } from './config'
 import { fetchUserBooks } from './utils/api'
+import { TopOverlay } from './components/TopOverlay'
+import { BottomControls } from './components/BottomControls'
+import { CameraManager, CameraManagerHandle } from './components/CameraManager'
+import { PersonReference } from './components/PersonReference'
 
+const getComplementaryColor = (hex: string) => {
+  const map: Record<string, string> = {
+    '#4F46E5': '#F2D379', // warm yellow
+    '#F6BDCC': '#8DE8B1', // mint green
+    '#094229': '#FCAECA', // pink
+  };
+  return map[hex.toUpperCase()] || map[hex] || '#ffffff';
+};
 
 function App() {
   const [hoveredBook, setHoveredBook] = useState<BookData | null>(null);
   const [pinnedBook, setPinnedBook] = useState<BookData | null>(null);
-  const [physicsStarted, setPhysicsStarted] = useState(false); // internal sequence: true when textures are ready and warmup finished
-  const [userPhysicsEnabled, setUserPhysicsEnabled] = useState(true); // user toggle preference
+  const [physicsStarted, setPhysicsStarted] = useState(false);
+  const [userPhysicsEnabled, setUserPhysicsEnabled] = useState(true);
+  const [backgroundColor, setBackgroundColor] = useState('#4F46E5');
+  const [showPerson, setShowPerson] = useState(false);
 
-  const [viewMode, setViewMode] = useState<'3d' | 'gallery' | 'yearly'>('3d');
+  const [viewMode] = useState<'3d' | 'gallery' | 'yearly'>('3d');
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const loadedBookCount = useRef(0);
-  const hasDroppedOnce = useRef(false); // tracks whether the first drop has happened
+  const hasDroppedOnce = useRef(false);
   const [allBooksLoaded, setAllBooksLoaded] = useState(false);
   const [dynamicBooksData, setDynamicBooksData] = useState<any>(booksData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const cameraManagerRef = useRef<CameraManagerHandle>(null);
 
   // Fetch dynamic data if username is in URL
   useEffect(() => {
@@ -51,11 +66,7 @@ function App() {
     }
   }, []);
 
-  const spacing = 0.22;
-  const startY = 10; // books always drop from height when physicsStarted
 
-  // Preload ALL cover images immediately on mount so they're in the browser cache
-  // before Three.js useTexture() calls them. This is the biggest win for first-load lag.
   useEffect(() => {
     const dataToUse = dynamicBooksData?.user_books || booksData.user_books;
     dataToUse.forEach((bookData: any) => {
@@ -65,9 +76,8 @@ function App() {
         img.src = config.getProxiedImageUrl(url);
       }
     });
-  }, [dynamicBooksData]); // re-run if dynamic data changes
+  }, [dynamicBooksData]);
 
-  // Map the data structure to match BookData type (memoized so hover state changes don't retrigger physics)
   const books = useMemo(() => {
     const sourceBooks = dynamicBooksData?.user_books || booksData.user_books;
     return sourceBooks
@@ -87,43 +97,46 @@ function App() {
           cached_contributors: bookData.book.cached_contributors
         }
       })) as BookData[];
-  }, [dynamicBooksData]); // Re-map if dynamic data changes
+  }, [dynamicBooksData]);
 
-  // Compute available years
   const availableYears = useMemo(() => {
     const years = new Set<number>();
     books.forEach(book => years.add(new Date(book.date_added).getFullYear()));
     return Array.from(years).sort((a, b) => b - a);
   }, [books]);
 
-  // Set initial selected year if null
   useEffect(() => {
     if (selectedYear === null && availableYears.length > 0) {
       setTimeout(() => setSelectedYear(availableYears[0]), 0);
     }
   }, [availableYears, selectedYear]);
 
-  // Filter books for the selected year (for 3d view); 0 = All Time
   const singleYearBooks = useMemo(() => {
     if (selectedYear === null) return [];
     if (selectedYear === 0) return books;
-    return books.filter(book => new Date(book.date_added).getFullYear() === selectedYear);
+    return books.filter(book => {
+      const year = new Date(book.date_added).getFullYear();
+      if (selectedYear === 2023) {
+        return year === 2023 || year === 2022;
+      }
+      return year === selectedYear;
+    });
   }, [books, selectedYear]);
 
-  // Calculate total height of books in meters
   const totalHeightMeters = useMemo(() => {
     return singleYearBooks.reduce((total, bookData) => {
       const pageCount = getPageCount(bookData)
-      const height = pageCount * 0.12 / 1000 // Convert mm to meters
+      const height = pageCount * 0.12 / 1000
       return total + height
     }, 0)
   }, [singleYearBooks])
 
-  // Reset loading state on book set / view mode changes
+  const spacing = 0.22;
+  const startY = Math.max((totalHeightMeters * 2) + 5, 10);
+
   useEffect(() => {
     if (viewMode === '3d') {
       loadedBookCount.current = 0;
-      // ONLY reset physicsStarted on the very first load to avoid year-change flickers
       if (!hasDroppedOnce.current) {
         setPhysicsStarted(false);
       }
@@ -133,7 +146,7 @@ function App() {
     }
   }, [singleYearBooks, viewMode]);
 
-  // Callback for when a book finishes loading its textures
+
   const handleBookLoad = useCallback(() => {
     loadedBookCount.current += 1;
     if (loadedBookCount.current === singleYearBooks.length) {
@@ -141,16 +154,11 @@ function App() {
     }
   }, [singleYearBooks.length]);
 
-  // Start the drop sequence after shaders have compiled on the static render.
-  // We only need the warmup frames on the FIRST ever drop — shaders are already
-  // compiled for year changes, so those start immediately (no flicker).
   useEffect(() => {
     if (viewMode === '3d' && allBooksLoaded && !physicsStarted) {
       if (hasDroppedOnce.current) {
-        // Shaders already compiled — start immediately
         setPhysicsStarted(true);
       } else {
-        // First drop: wait for shader compilation across a few frames
         let raf1: number, raf2: number, raf3: number, raf4: number, raf5: number;
         raf1 = requestAnimationFrame(() => {
           raf2 = requestAnimationFrame(() => {
@@ -175,13 +183,6 @@ function App() {
     }
   }, [allBooksLoaded, viewMode]);
 
-
-  // Log state changes for debugging
-  // useEffect(() => {
-  //   console.log("allBooksLoaded state changed:", allBooksLoaded);
-  // }, [allBooksLoaded]);
-
-  // Pre-calculate Y positions for static layout
   const staticYPositions = useMemo(() => {
     return singleYearBooks.reduce((acc, bookData) => {
       const pageCount = getPageCount(bookData);
@@ -192,11 +193,74 @@ function App() {
     }, [] as { yPos: number, total: number }[]).map(r => r.yPos);
   }, [singleYearBooks]);
 
-  return (
-    <div style={{ width: '100%', height: '100dvh', background: '#FFF', position: 'relative', overflow: 'hidden' }}>
-      {/* The loader only cares about the internal sequence (textures + warmup) */}
-      <LoadingOverlay isLoading={(viewMode === '3d' && (!allBooksLoaded || (!hasDroppedOnce.current && !physicsStarted))) || isLoading} />
+  useEffect(() => {
+    if (viewMode === '3d' && allBooksLoaded && cameraManagerRef.current) {
+      // Small delay to ensure controls are ready
+      const timer = setTimeout(() => {
+        // Cap the starting position between 0.5m and 1.5m equivalent
+        const cappedHeight = Math.max(0.5, Math.min(totalHeightMeters, 1.5));
+        cameraManagerRef.current?.snapToCentroid(cappedHeight);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [allBooksLoaded, viewMode, totalHeightMeters]);
 
+  const handleCenterCamera = () => {
+    if (cameraManagerRef.current) {
+      const cappedHeight = Math.max(0.5, Math.min(totalHeightMeters, 1.5));
+      cameraManagerRef.current.snapToCentroid(cappedHeight);
+    }
+  };
+
+  const handleInstagramSnap = async () => {
+    if (!cameraManagerRef.current) return;
+
+    // For the actual snap/screenshot, we use the real height
+    await cameraManagerRef.current.snapToCentroid(totalHeightMeters);
+
+    // 2. Wait a bit for camera to settle (if we added lerp, but for now it's instant)
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // 3. Take screenshot
+    const dataUrl = await cameraManagerRef.current.takeScreenshot({
+      year: selectedYear || 'All Time',
+      height: `${totalHeightMeters.toFixed(2)}m`,
+      comparison: getComparison(totalHeightMeters)
+    });
+
+    if (!dataUrl) return;
+
+    // 4. Share or download
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], 'book-stack.png', { type: 'image/png' });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'My Book Stack',
+          text: `I read ${totalHeightMeters.toFixed(2)}m of books this year!`,
+        });
+      } else {
+        // Fallback to download
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = `book-stack-${selectedYear || 'all-time'}.png`;
+        link.click();
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+      // Fallback to download
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `book-stack-${selectedYear || 'all-time'}.png`;
+      link.click();
+    }
+  };
+
+  return (
+    <div style={{ width: '100%', height: '100dvh', background: backgroundColor, position: 'relative', overflow: 'hidden', color: '#000' }}>
+      <LoadingOverlay isLoading={(viewMode === '3d' && (!allBooksLoaded || (!hasDroppedOnce.current && !physicsStarted))) || isLoading} />
 
       {error && (
         <div style={{
@@ -216,105 +280,33 @@ function App() {
         </div>
       )}
 
-      <div style={{
-        position: 'absolute',
-        top: '30px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1000,
-        background: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255, 255, 255, 0.5)',
-        padding: '16px 28px',
-        borderRadius: '24px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '40px',
-        fontFamily: '"Inter", system-ui, sans-serif',
-        minWidth: '550px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <select
-            value={viewMode}
-            onChange={(e) => setViewMode(e.target.value as '3d' | 'gallery' | 'yearly')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '12px',
-              border: '1px solid #E5E7EB',
-              background: '#fff',
-              color: '#374151',
-              fontWeight: 500,
-              fontSize: '0.95rem',
-              cursor: 'pointer',
-              outline: 'none',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-            }}
-          >
-            <option value="3d">Single Pile</option>
-            <option value="yearly">Yearly Piles</option>
-            <option value="gallery">Gallery</option>
-          </select>
-          {viewMode === '3d' && availableYears.length > 0 && (
-            <select
-              value={selectedYear || ''}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '12px',
-                border: '1px solid #E5E7EB',
-                background: '#fff',
-                color: '#374151',
-                fontWeight: 500,
-                fontSize: '0.95rem',
-                cursor: 'pointer',
-                outline: 'none',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-              }}
-            >
-              {availableYears.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-              <option value={0}>All Time</option>
-            </select>
-          )}
-          {(viewMode === '3d' || viewMode === 'yearly') && (
-            <label style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', gap: '8px', color: '#4B5563', fontWeight: 500, fontSize: '0.95rem' }}>
-              <input
-                type="checkbox"
-                checked={userPhysicsEnabled}
-                onChange={(e) => setUserPhysicsEnabled(e.target.checked)}
+      <TopOverlay
+        selectedYear={selectedYear}
+        totalHeightMeters={totalHeightMeters}
+      />
 
-                style={{ width: '18px', height: '18px', accentColor: '#4F46E5', cursor: 'pointer' }}
-              />
-              Physics
-            </label>
-          )}
-        </div>
-
-        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <p style={{ margin: '0 0 2px 0', fontSize: '0.85rem', color: '#6B7280', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {selectedYear === 0 ? 'All time you read' : `In ${selectedYear} you read`}
-          </p>
-          <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#111827', lineHeight: '1.1' }}>
-            {totalHeightMeters.toFixed(2)} metres
-          </div>
-          <p style={{ margin: '2px 0 0 0', fontSize: '0.85rem', color: '#4B5563', fontWeight: 500 }}>
-            ≈ {getComparison(totalHeightMeters)}
-          </p>
-        </div>
-      </div>
+      <BottomControls
+        viewMode={viewMode}
+        selectedYear={selectedYear}
+        setSelectedYear={setSelectedYear}
+        availableYears={availableYears}
+        userPhysicsEnabled={userPhysicsEnabled}
+        setUserPhysicsEnabled={setUserPhysicsEnabled}
+        backgroundColor={backgroundColor}
+        setBackgroundColor={setBackgroundColor}
+        onInstagramSnap={handleInstagramSnap}
+        onCenterCamera={handleCenterCamera}
+        showPerson={showPerson}
+        setShowPerson={setShowPerson}
+      />
 
       {viewMode === '3d' ? (
         <Canvas shadows camera={{ position: [5, 2, 5], fov: 50 }}>
-          <color attach="background" args={['#4F46E5']} />
+          <color attach="background" args={[backgroundColor]} />
           <Physics
             key={`physics-${singleYearBooks.length}`}
             gravity={[0, -9.81, 0]}
             paused={!physicsStarted || !allBooksLoaded || !userPhysicsEnabled}
-
             timeStep="vary"
             interpolate={false}
             numSolverIterations={4}
@@ -365,7 +357,6 @@ function App() {
               shadow-mapSize={[512, 512]}
             />
 
-            {/* Spotlight specifically for book spines */}
             <spotLight
               position={[-2, 3, 2]}
               angle={0.3}
@@ -377,21 +368,29 @@ function App() {
               target-position={[0, 1.5, 0]}
             />
 
-            <Ground />
+            {/* Front lighting */}
+            <directionalLight
+              position={[-8, 10, 8]}
+              intensity={0.5}
+              castShadow
+              shadow-mapSize={[1024, 1024]}
+              color={getComplementaryColor(backgroundColor)}
+              shadow-camera-left={-10}
+              shadow-camera-right={10}
+              shadow-camera-top={10}
+              shadow-camera-bottom={-10}
+            />
+
+            <Ground color={backgroundColor} />
+
+            {showPerson && <PersonReference position={[-3.2, 0, 0]} height={13} />}
 
             <Suspense fallback={null}>
               {singleYearBooks.map((bookData, index) => {
-                // Calculate effective physics state
                 const isEffectivePhysics = physicsStarted && userPhysicsEnabled;
-
-                // On the first load, position books at their drop heights while waiting for warmup
-                // This prevents a massive layout jump when physics finally kicks in
                 const waitAtDropHeight = !hasDroppedOnce.current && allBooksLoaded && !physicsStarted;
-
                 const randomX = (isEffectivePhysics || waitAtDropHeight) ? (Math.sin(index * 12.34) - 0.1) * 0.01 : 0;
                 const randomZ = (isEffectivePhysics || waitAtDropHeight) ? (Math.cos(index * 56.78) - 0.1) * 0.01 : 0;
-
-                // Calculate Y position based on effective physics or warmup wait state
                 const yPosition = (isEffectivePhysics || waitAtDropHeight)
                   ? startY + index * spacing
                   : staticYPositions[index];
@@ -417,7 +416,6 @@ function App() {
                       }
                     }}
                     isPhysicsEnabled={isEffectivePhysics}
-
                     onLoad={handleBookLoad}
                   />
                 )
@@ -425,18 +423,13 @@ function App() {
             </Suspense>
           </Physics>
 
-          <OrbitControls
-            target={[0, 2, 0]}
-            maxPolarAngle={Math.PI / 2.1}
-            minDistance={3}
-            maxDistance={20}
-          />
+          <CameraManager ref={cameraManagerRef} target={[0, 2, 0]} />
+
           <Preload all />
-          <fog attach="fog" args={['#4F46E5', 30, 100]} />
+          <fog attach="fog" args={[backgroundColor, 20, 300]} />
         </Canvas>
       ) : viewMode === 'yearly' ? (
         <YearlyBookPiles books={books} isPhysicsEnabled={physicsStarted && userPhysicsEnabled} />
-
       ) : (
         <BookGallery books={books} />
       )}
@@ -444,9 +437,13 @@ function App() {
       {viewMode === '3d' && (pinnedBook || hoveredBook) && (
         <div style={{
           position: 'absolute',
-          top: '80px', // Further down, accounting for navbar
-          right: '24px', // Space from right edge
-          zIndex: 1000
+          top: window.innerWidth < 768 ? 'auto' : '120px',
+          bottom: window.innerWidth < 768 ? '160px' : 'auto',
+          right: window.innerWidth < 768 ? '50%' : '24px',
+          transform: window.innerWidth < 768 ? 'translateX(50%)' : 'none',
+          zIndex: 1000,
+          width: window.innerWidth < 768 ? '90%' : 'auto',
+          maxWidth: window.innerWidth < 768 ? '350px' : 'none'
         }}>
           <ModernBookCard
             bookData={(hoveredBook || pinnedBook)!}

@@ -186,8 +186,10 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
       <RigidBody
         position={position}
         colliders="cuboid"
-        restitution={0}
-        friction={0.4}
+        restitution={0.001}
+        friction={0.45}
+        linearDamping={0.2}
+        angularDamping={0.1}
       >
         {bookContentNode}
       </RigidBody>

@@ -1,0 +1,45 @@
+export const getArtNouveauBorderSvg = () => {
+    // We keep the function name for compatibility, but this is a geometric Art Deco border.
+    const svgStr = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920" preserveAspectRatio="none">',
+        '  <defs>',
+        '    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">',
+        '      <stop offset="0%" stop-color="#E0B976" />',
+        '      <stop offset="25%" stop-color="#FFF2CA" />',
+        '      <stop offset="50%" stop-color="#D4AF37" />',
+        '      <stop offset="75%" stop-color="#AA7C11" />',
+        '      <stop offset="100%" stop-color="#8B6914" />',
+        '    </linearGradient>',
+        '    <filter id="shadow">',
+        '      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.4"/>',
+        '    </filter>',
+        '    <g id="half-deco-border" stroke="url(#gold)" fill="none" filter="url(#shadow)" stroke-linecap="square" stroke-linejoin="miter">',
+        '        <!-- Outer line -->',
+        '        <path d="M 0 1880 L 0 0 L 500 0" stroke-width="8" />',
+        '        <!-- The Corner Box -->',
+        '        <path d="M 0 90 L 90 90 L 90 0" stroke-width="5" />',
+        '        <path d="M 0 30 A 30 30 0 0 1 30 0" stroke-width="5" />',
+        '        <line x1="21" y1="21" x2="90" y2="90" stroke-width="5" />',
+        '        <line x1="13" y1="27" x2="50" y2="90" stroke-width="5" />',
+        '        <line x1="27" y1="13" x2="90" y2="50" stroke-width="5" />',
+        '        <!-- Wrapped Stepped Line 1 -->',
+        '        <path d="M 20 1880 L 20 120 L 120 120 L 120 20 L 500 20" stroke-width="4"/>',
+        '        <!-- Wrapped Stepped Line 2 -->',
+        '        <path d="M 40 1880 L 40 150 L 150 150 L 150 40 L 500 40" stroke-width="3"/>',
+        '        <!-- Wrapped Stepped Line 3 -->',
+        '        <path d="M 60 1880 L 60 180 L 180 180 L 180 60 L 500 60" stroke-width="2"/>',
+        '    </g>',
+        '  </defs>',
+        '  <!-- Bottom Left Half -->',
+        '  <g transform="translate(40, 1880) scale(1, -1)">',
+        '     <use href="#half-deco-border" />',
+        '  </g>',
+        '  <!-- Bottom Right Half -->',
+        '  <g transform="translate(1040, 1880) scale(-1, -1)">',
+        '     <use href="#half-deco-border" />',
+        '  </g>',
+        '</svg>'
+    ].join('\n');
+
+    return `data:image/svg+xml;base64,${btoa(svgStr)}`;
+};
