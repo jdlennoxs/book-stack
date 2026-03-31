@@ -1,6 +1,20 @@
 export async function onRequest(context) {
   const { request, env, waitUntil } = context;
   const url = new URL(request.url);
+  const secFetchSite = request.headers.get('sec-fetch-site');
+  const secFetchMode = request.headers.get('sec-fetch-mode');
+
+  // Restrict API endpoints from being accessed via direct browser navigation or other sites
+  if (url.pathname === '/image-proxy' || url.pathname === '/graphql') {
+    // Only allow requests from our own origin
+    if (secFetchSite && secFetchSite !== 'same-origin') {
+      return new Response('Access denied: Requests must originate from the application.', { status: 403 });
+    }
+    // Block direct browser navigation to API endpoints
+    if (secFetchMode === 'navigate') {
+      return new Response('Forbidden: API endpoints cannot be accessed directly in the browser.', { status: 403 });
+    }
+  }
 
   // --- ENDPOINT: /image-proxy ---
   if (url.pathname === '/image-proxy') {
@@ -95,7 +109,6 @@ export async function onRequest(context) {
 }`;
 
     try {
-      console.log('HARDCOVER_API_TOKEN available:', !!env.HARDCOVER_API_TOKEN, 'Length:', (env.HARDCOVER_API_TOKEN || "").length);
       const authHeader = env.HARDCOVER_API_TOKEN ? `Bearer ${env.HARDCOVER_API_TOKEN}` : '';
       const response = await fetch('https://api.hardcover.app/v1/graphql', {
         method: 'POST',
@@ -145,5 +158,5 @@ export async function onRequest(context) {
     }
   }
 
-  return new Response('Not found', { status: 404 });
+  return context.next();
 }
