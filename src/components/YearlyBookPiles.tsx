@@ -116,7 +116,7 @@ export function YearlyBookPiles({ books, isPhysicsEnabled }: YearlyBookPilesProp
 
               return (
                 <Book
-                  key={`${yearData.year}-${bookData.book.title}`}
+                  key={`${bookData.book.id}-${bookData.date_added}`}
                   position={[yearIndex * pileSpacing + randomX, yPosition, randomZ]}
                   data={bookData}
                   onHover={(isHovered) => setHoveredBook(isHovered ? bookData : null)}

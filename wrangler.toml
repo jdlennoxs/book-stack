@@ -1,6 +1,7 @@
-name = "book-stack-worker"
+name = "hardcover-proxy"
 main = "worker.js"
 compatibility_date = "2024-03-12"
+preview_urls = false
 
 # Local development variables
 [vars]
@@ -10,7 +11,11 @@ compatibility_date = "2024-03-12"
 # If you are on the Free plan, you might need to use the Cloudflare Dashboard 
 # or a KV-based approach for strict global limiting.
 # However, this is the standard way to define it in wrangler.toml:
-[[rate_limiting]]
-binding = "RATE_LIMITER"
-limit = 60
-period = 60
+[[kv_namespaces]]
+binding = "BOOK_STACK_CACHE"
+id = "d55f8a31bbc6438dbe83742586f5c867" 
+
+# [[rate_limiting]]
+# binding = "RATE_LIMITER"
+# limit = 60
+# period = 60

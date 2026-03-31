@@ -1,6 +1,6 @@
 import { useMemo, useState, Suspense, useCallback, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Preload } from '@react-three/drei'
+import { Preload, OrthographicCamera } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
 import './App.css'
 import { getComparison } from './utils/heightComparisons'
@@ -25,6 +25,7 @@ const getComplementaryColor = (hex: string) => {
     '#4F46E5': '#F2D379', // warm yellow
     '#F6BDCC': '#8DE8B1', // mint green
     '#094229': '#FCAECA', // pink
+    '#E1AD01': '#4F46E5', // mustard yellow -> indigo
   };
   return map[hex.toUpperCase()] || map[hex] || '#ffffff';
 };
@@ -33,9 +34,15 @@ function App() {
   const [hoveredBook, setHoveredBook] = useState<BookData | null>(null);
   const [pinnedBook, setPinnedBook] = useState<BookData | null>(null);
   const [physicsStarted, setPhysicsStarted] = useState(false);
-  const [userPhysicsEnabled, setUserPhysicsEnabled] = useState(true);
-  const [backgroundColor, setBackgroundColor] = useState('#4F46E5');
+  const [userPhysicsEnabled, setUserPhysicsEnabled] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const testPhysics = params.get('testPhysics');
+    if (testPhysics === 'false') return false;
+    return true;
+  });
+  const [backgroundColor, setBackgroundColor] = useState('#E1AD01');
   const [showPerson, setShowPerson] = useState(false);
+  const [viewAngle, setViewAngle] = useState<'flat' | 'isometric'>('flat');
 
   const [viewMode] = useState<'3d' | 'gallery' | 'yearly'>('3d');
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -47,24 +54,32 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const cameraManagerRef = useRef<CameraManagerHandle>(null);
 
-  // Fetch dynamic data if username is in URL
-  useEffect(() => {
+  const [username, setUsername] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    const username = params.get('username');
-    if (username) {
-      setIsLoading(true);
-      fetchUserBooks(username)
-        .then(data => {
-          setDynamicBooksData(data);
-          setIsLoading(false);
-        })
-        .catch(err => {
-          console.error('Error fetching dynamic books:', err);
-          setError(err.message);
-          setIsLoading(false);
-        });
-    }
-  }, []);
+    return params.get('username') || '';
+  });
+
+  // Fetch dynamic data if username changed
+  useEffect(() => {
+    const fetchName = username || 'jdlennoxs';
+    setIsLoading(true);
+    fetchUserBooks(fetchName)
+      .then(data => {
+        setDynamicBooksData(data);
+        // Only update URL if username was actually typed
+        if (username) {
+          const url = new URL(window.location.href);
+          url.searchParams.set('username', username);
+          window.history.pushState({}, '', url);
+        }
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching dynamic books:', err);
+        setError(err.message);
+        setIsLoading(false);
+      });
+  }, [username]);
 
 
   useEffect(() => {
@@ -80,23 +95,36 @@ function App() {
 
   const books = useMemo(() => {
     const sourceBooks = dynamicBooksData?.user_books || booksData.user_books;
+    if (!sourceBooks) return [];
+
+    const currentYear = new Date().getFullYear();
+    const minYear = currentYear - 4; // Last 5 years including current
+
     return sourceBooks
-      .filter((bookData: any) => bookData.user_book_reads && bookData.user_book_reads.length > 0)
-      .map((bookData: any) => ({
-        date_added: bookData.user_book_reads[0].finished_at,
-        read_count: 1,
-        updated_at: bookData.user_book_reads[0].finished_at,
-        rating: bookData.user_book_reads[0].user_book?.rating || null,
-        book: {
-          user_added: false,
-          id: bookData.book.id,
-          title: bookData.book.title,
-          pages: bookData.book.pages || null,
-          images: [],
-          image: bookData.book.cached_image || null,
-          cached_contributors: bookData.book.cached_contributors
-        }
-      })) as BookData[];
+      .flatMap((bookData: any) => {
+        if (!bookData.user_book_reads || bookData.user_book_reads.length === 0) return [];
+
+        return bookData.user_book_reads.map((read: any) => ({
+          date_added: read.finished_at,
+          read_count: 1,
+          updated_at: read.finished_at,
+          rating: read.user_book?.rating || null,
+          book: {
+            user_added: false,
+            id: bookData.book.id,
+            title: bookData.book.title,
+            pages: bookData.book.pages || null,
+            images: [],
+            image: bookData.book.cached_image || null,
+            cached_contributors: bookData.book.cached_contributors
+          }
+        }));
+      })
+      .filter((book: any) => {
+        const year = new Date(book.date_added).getFullYear();
+        return year >= minYear;
+      })
+      .sort((a: any, b: any) => new Date(a.date_added).getTime() - new Date(b.date_added).getTime()) as BookData[];
   }, [dynamicBooksData]);
 
   const availableYears = useMemo(() => {
@@ -112,16 +140,45 @@ function App() {
   }, [availableYears, selectedYear]);
 
   const singleYearBooks = useMemo(() => {
-    if (selectedYear === null) return [];
-    if (selectedYear === 0) return books;
-    return books.filter(book => {
-      const year = new Date(book.date_added).getFullYear();
-      if (selectedYear === 2023) {
-        return year === 2023 || year === 2022;
+    // Hidden test override for visual tests 
+    const params = new URLSearchParams(window.location.search);
+    const testHeight = params.get('testHeight');
+    
+    let filteredBooks = books;
+    if (selectedYear !== null) {
+      filteredBooks = books.filter(book => new Date(book.date_added).getFullYear() === selectedYear);
+    }
+
+    if (testHeight) {
+      // Mock some books to reach the target height roughly
+      // We duplicate the available books to reach the target height if necessary
+      // We use ALL available books as the source to ensure testHeight works even if 
+      // the currently selected year is empty.
+      const targetUnits = parseFloat(testHeight) / 0.15;
+      let currentUnits = 0;
+      const mocked: BookData[] = [];
+      
+      const sourcePool = books.length > 0 ? books : filteredBooks;
+
+      if (sourcePool.length > 0) {
+        while (currentUnits < targetUnits && mocked.length < 500) { // Safety cap
+          const b = sourcePool[mocked.length % sourcePool.length];
+          mocked.push(b);
+          currentUnits += calculateBookDepth(getPageCount(b));
+        }
       }
-      return year === selectedYear;
-    });
+      return mocked;
+    }
+
+    return filteredBooks;
   }, [books, selectedYear]);
+
+  // Handle test view angle override
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const angle = params.get('testAngle') as 'flat' | 'isometric';
+    if (angle) setViewAngle(angle);
+  }, []);
 
   const totalHeightMeters = useMemo(() => {
     return singleYearBooks.reduce((total, bookData) => {
@@ -131,8 +188,33 @@ function App() {
     }, 0)
   }, [singleYearBooks])
 
-  const spacing = 0.22;
-  const startY = Math.max((totalHeightMeters * 2) + 5, 10);
+  const totalPhysicsHeight = useMemo(() => {
+    return singleYearBooks.reduce((total, bookData) => {
+      return total + calculateBookDepth(getPageCount(bookData));
+    }, 0);
+  }, [singleYearBooks]);
+
+
+  const dropYPositions = useMemo(() => {
+    const startY = 10;
+    return singleYearBooks.reduce((acc, bookData) => {
+      const pageCount = getPageCount(bookData);
+      const depth = calculateBookDepth(pageCount);
+      const prevTotal = acc.length > 0 ? acc[acc.length - 1].total : startY;
+      acc.push({ yPos: prevTotal + depth / 2, total: prevTotal + depth + 0.12 });
+      return acc;
+    }, [] as { yPos: number, total: number }[]).map(r => r.yPos);
+  }, [singleYearBooks]);
+
+  const staticYPositions = useMemo(() => {
+    return singleYearBooks.reduce((acc, bookData) => {
+      const pageCount = getPageCount(bookData);
+      const depth = calculateBookDepth(pageCount);
+      const prevTotal = acc.length > 0 ? acc[acc.length - 1].total : 0;
+      acc.push({ yPos: prevTotal + depth / 2, total: prevTotal + depth });
+      return acc;
+    }, [] as { yPos: number, total: number }[]).map(r => r.yPos);
+  }, [singleYearBooks]);
 
   useEffect(() => {
     if (viewMode === '3d') {
@@ -183,49 +265,43 @@ function App() {
     }
   }, [allBooksLoaded, viewMode]);
 
-  const staticYPositions = useMemo(() => {
-    return singleYearBooks.reduce((acc, bookData) => {
-      const pageCount = getPageCount(bookData);
-      const depth = calculateBookDepth(pageCount);
-      const prevTotal = acc.length > 0 ? acc[acc.length - 1].total : 0;
-      acc.push({ yPos: prevTotal + depth / 2, total: prevTotal + depth });
-      return acc;
-    }, [] as { yPos: number, total: number }[]).map(r => r.yPos);
-  }, [singleYearBooks]);
-
   useEffect(() => {
     if (viewMode === '3d' && allBooksLoaded && cameraManagerRef.current) {
       // Small delay to ensure controls are ready
       const timer = setTimeout(() => {
-        // Cap the starting position between 0.5m and 1.5m equivalent
-        const cappedHeight = Math.max(0.5, Math.min(totalHeightMeters, 1.5));
-        cameraManagerRef.current?.snapToCentroid(cappedHeight);
+        cameraManagerRef.current?.snapToCentroid(totalPhysicsHeight, viewAngle, false);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [allBooksLoaded, viewMode, totalHeightMeters]);
+  }, [allBooksLoaded, viewMode, totalPhysicsHeight, viewAngle]);
 
-  const handleCenterCamera = () => {
+  const handleCenterCamera = (angle: 'flat' | 'isometric') => {
+    setViewAngle(angle);
     if (cameraManagerRef.current) {
-      const cappedHeight = Math.max(0.5, Math.min(totalHeightMeters, 1.5));
-      cameraManagerRef.current.snapToCentroid(cappedHeight);
+      setTimeout(() => {
+        cameraManagerRef.current?.snapToCentroid(totalPhysicsHeight, angle, false);
+      }, 50); // Small delay to let canvas internal cameras swap
     }
   };
 
-  const handleInstagramSnap = async () => {
+  const handleNativeShare = async () => {
     if (!cameraManagerRef.current) return;
 
-    // For the actual snap/screenshot, we use the real height
-    await cameraManagerRef.current.snapToCentroid(totalHeightMeters);
+    // For the actual snap/screenshot, we instantly clamp the height geometry 
+    // to avoid snapping mid-lerp
+    await cameraManagerRef.current.snapToCentroid(totalPhysicsHeight, viewAngle, true);
 
-    // 2. Wait a bit for camera to settle (if we added lerp, but for now it's instant)
+    // 2. Wait a bit for react rendering pass to stabilize
     await new Promise(resolve => setTimeout(resolve, 100));
 
     // 3. Take screenshot
     const dataUrl = await cameraManagerRef.current.takeScreenshot({
       year: selectedYear || 'All Time',
       height: `${totalHeightMeters.toFixed(2)}m`,
-      comparison: getComparison(totalHeightMeters)
+      comparison: getComparison(totalHeightMeters),
+      totalPhysicsHeight: totalPhysicsHeight,
+      viewAngle: viewAngle,
+      username: username
     });
 
     if (!dataUrl) return;
@@ -258,9 +334,11 @@ function App() {
     }
   };
 
+  const isSceneLoading = (viewMode === '3d' && (!allBooksLoaded || (!hasDroppedOnce.current && !physicsStarted))) || isLoading;
+
   return (
     <div style={{ width: '100%', height: '100dvh', background: backgroundColor, position: 'relative', overflow: 'hidden', color: '#000' }}>
-      <LoadingOverlay isLoading={(viewMode === '3d' && (!allBooksLoaded || (!hasDroppedOnce.current && !physicsStarted))) || isLoading} />
+      <LoadingOverlay isLoading={isSceneLoading} />
 
       {error && (
         <div style={{
@@ -280,10 +358,13 @@ function App() {
         </div>
       )}
 
-      <TopOverlay
-        selectedYear={selectedYear}
-        totalHeightMeters={totalHeightMeters}
-      />
+      {!isSceneLoading && (
+        <TopOverlay
+          selectedYear={selectedYear}
+          totalHeightMeters={totalHeightMeters}
+          username={username}
+        />
+      )}
 
       <BottomControls
         viewMode={viewMode}
@@ -294,14 +375,17 @@ function App() {
         setUserPhysicsEnabled={setUserPhysicsEnabled}
         backgroundColor={backgroundColor}
         setBackgroundColor={setBackgroundColor}
-        onInstagramSnap={handleInstagramSnap}
+        onShare={handleNativeShare}
         onCenterCamera={handleCenterCamera}
         showPerson={showPerson}
         setShowPerson={setShowPerson}
+        onUsernameSubmit={setUsername}
+        viewAngle={viewAngle}
       />
 
       {viewMode === '3d' ? (
-        <Canvas shadows camera={{ position: [5, 2, 5], fov: 50 }}>
+        <Canvas shadows>
+          <OrthographicCamera makeDefault position={viewAngle === 'flat' ? [0, 2, 5] : [6, 3, 6]} zoom={85} near={-100} far={2000} />
           <color attach="background" args={[backgroundColor]} />
           <Physics
             key={`physics-${singleYearBooks.length}`}
@@ -310,17 +394,20 @@ function App() {
             timeStep="vary"
             interpolate={false}
             numSolverIterations={4}
+            numInternalPgsIterations={10}
+            maxCcdSubsteps={2}
           >
             <ambientLight intensity={0.8} />
             <directionalLight
-              position={[5, 5, 5]}
+              position={[5, 15, 5]}
               intensity={1.2}
               castShadow
-              shadow-mapSize={[1024, 1024]}
-              shadow-camera-left={-10}
-              shadow-camera-right={10}
-              shadow-camera-top={10}
-              shadow-camera-bottom={-10}
+              shadow-mapSize={[2048, 2048]}
+              shadow-camera-left={-40}
+              shadow-camera-right={40}
+              shadow-camera-top={40}
+              shadow-camera-bottom={-40}
+              shadow-camera-far={200}
             />
             <directionalLight
               position={[-5, 1, 3]}
@@ -350,11 +437,15 @@ function App() {
             />
 
             <directionalLight
-              position={[-2, 4, -5]}
+              position={[-2, 10, -5]}
               intensity={0.3}
               color="#EEC2EB"
               castShadow
-              shadow-mapSize={[512, 512]}
+              shadow-mapSize={[1024, 1024]}
+              shadow-camera-left={-20}
+              shadow-camera-right={20}
+              shadow-camera-top={20}
+              shadow-camera-bottom={-20}
             />
 
             <spotLight
@@ -368,17 +459,17 @@ function App() {
               target-position={[0, 1.5, 0]}
             />
 
-            {/* Front lighting */}
             <directionalLight
-              position={[-8, 10, 8]}
+              position={[-8, 15, 8]}
               intensity={0.5}
               castShadow
-              shadow-mapSize={[1024, 1024]}
+              shadow-mapSize={[2048, 2048]}
               color={getComplementaryColor(backgroundColor)}
-              shadow-camera-left={-10}
-              shadow-camera-right={10}
-              shadow-camera-top={10}
-              shadow-camera-bottom={-10}
+              shadow-camera-left={-40}
+              shadow-camera-right={40}
+              shadow-camera-top={40}
+              shadow-camera-bottom={-40}
+              shadow-camera-far={200}
             />
 
             <Ground color={backgroundColor} />
@@ -387,24 +478,32 @@ function App() {
 
             <Suspense fallback={null}>
               {singleYearBooks.map((bookData, index) => {
-                const isEffectivePhysics = physicsStarted && userPhysicsEnabled;
+                // Mount RigidBodies universally if the user wants them, even while the engine is paused!
+                // This forces Rapier to pre-allocate its WASM memory during our quiet RAF warmup loop,
+                // eliminating the massive GC instantiation stutter that occurs if we mount them on exactly 
+                // the same frame we unpause the physics simulator!
+                const mountPhysicsNode = userPhysicsEnabled;
                 const waitAtDropHeight = !hasDroppedOnce.current && allBooksLoaded && !physicsStarted;
-                const randomX = (isEffectivePhysics || waitAtDropHeight) ? (Math.sin(index * 12.34) - 0.1) * 0.01 : 0;
-                const randomZ = (isEffectivePhysics || waitAtDropHeight) ? (Math.cos(index * 56.78) - 0.1) * 0.01 : 0;
-                const yPosition = (isEffectivePhysics || waitAtDropHeight)
-                  ? startY + index * spacing
+
+                const randomX = (mountPhysicsNode || waitAtDropHeight) ? (Math.sin(index * 12.34) - 0.1) * 0.02 : 0;
+                const randomZ = (mountPhysicsNode || waitAtDropHeight) ? (Math.cos(index * 56.78) - 0.1) * 0.02 : 0;
+
+                const yPosition = (mountPhysicsNode || waitAtDropHeight)
+                  ? dropYPositions[index]
                   : staticYPositions[index];
+
+                const testHeightKey = new URLSearchParams(window.location.search).get('testHeight') || 'normal';
 
                 return (
                   <Book
-                    key={bookData.book.title}
+                    key={`${bookData.book.id}-${bookData.date_added}-${index}-${selectedYear}-${testHeightKey}`}
                     index={index}
                     position={[randomX, yPosition, randomZ]}
                     data={bookData}
                     onHover={(isHovered) => {
                       if (isHovered) {
                         setHoveredBook(bookData);
-                      } else if (hoveredBook?.book.title === bookData.book.title) {
+                      } else if (hoveredBook === bookData) {
                         setHoveredBook(null);
                       }
                     }}
@@ -415,7 +514,7 @@ function App() {
                         setHoveredBook(null);
                       }
                     }}
-                    isPhysicsEnabled={isEffectivePhysics}
+                    isPhysicsEnabled={mountPhysicsNode}
                     onLoad={handleBookLoad}
                   />
                 )
@@ -426,7 +525,7 @@ function App() {
           <CameraManager ref={cameraManagerRef} target={[0, 2, 0]} />
 
           <Preload all />
-          <fog attach="fog" args={[backgroundColor, 20, 300]} />
+          <fog attach="fog" args={[backgroundColor, 40, 150]} />
         </Canvas>
       ) : viewMode === 'yearly' ? (
         <YearlyBookPiles books={books} isPhysicsEnabled={physicsStarted && userPhysicsEnabled} />
@@ -442,8 +541,8 @@ function App() {
           right: window.innerWidth < 768 ? '50%' : '24px',
           transform: window.innerWidth < 768 ? 'translateX(50%)' : 'none',
           zIndex: 1000,
-          width: window.innerWidth < 768 ? '90%' : 'auto',
-          maxWidth: window.innerWidth < 768 ? '350px' : 'none'
+          width: window.innerWidth < 768 ? '92%' : 'auto',
+          maxWidth: window.innerWidth < 768 ? '400px' : 'none'
         }}>
           <ModernBookCard
             bookData={(hoveredBook || pinnedBook)!}
@@ -459,50 +558,20 @@ function App() {
 
 export default App
 
-// query MyQuery {
-//   me {
-//     user_books(where: {read_count: {_gt: 0}, last_read_date: {}}) {
-//       date_added
-//       read_count
-//       updated_at
-//       book {
-//         user_added
-//         title
-//         image {
-//           url
-//           color
-//           height
-//           width
-//         }
-//         pages
-//         cached_contributors
-//         editions(where: {pages: {_is_null: false, _gt: 0}}, limit: 1) {
-//           pages
-//         }
-//       }
+// query MyQuery($username: citext!) {
+//   user_books(where: {user: {username: {_eq: $username}}, user_book_reads: {finished_at: {_is_null: false}}}) {
+//     book {
+//       slug
+//       title
+//       cached_contributors(path: "$.[0].author.name")
+//       cached_image
+//       id
+//       pages
 //     }
-//   }
-// }
-
-
-// query MyQuery {
-//   me {
-//     user_books {
-//       user_book_reads {
-//         finished_at
-//         edition {
-//           title
-//           pages
-//           cached_contributors
-//           book {
-//             id
-//             editions(where: {pages: {_is_null: false, _gt: 0}}, limit: 1) {
-//               pages
-//               id
-//             }
-//             cached_image
-//           }
-//         }
+//     user_book_reads(where: {finished_at: {_is_null: false}}) {
+//       finished_at
+//       user_book {
+//         rating
 //       }
 //     }
 //   }

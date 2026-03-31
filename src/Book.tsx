@@ -160,7 +160,7 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
       }}
     >
       {/* Outer book cover */}
-      <Box args={[baseWidth + 0.01, height + 0.01, depth + 0.01]} position={[0, depth / 2, 0]} castShadow>
+      <Box args={[baseWidth + 0.01, height + 0.01, depth + 0.01]} position={[0, depth / 2, 0]} castShadow frustumCulled={false}>
         <primitive attach="material-0" object={transparentMaterial} />
         <primitive attach="material-1" object={detailedTexturesLoaded && textures ? spineMaterial : coverMaterial} />
         <primitive attach="material-2" object={transparentMaterial} />
@@ -170,7 +170,7 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
       </Box>
 
       {/* Inner book pages */}
-      <Box args={[baseWidth, height, depth]} position={[-0.0009, depth / 2, 0]} castShadow>
+      <Box args={[baseWidth, height, depth]} position={[-0.0009, depth / 2, 0]} castShadow frustumCulled={false}>
         <primitive attach="material-0" object={pageMaterial} />
         <primitive attach="material-1" object={pageMaterial} />
         <primitive attach="material-2" object={pageMaterial} />
@@ -186,10 +186,11 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
       <RigidBody
         position={position}
         colliders="cuboid"
-        restitution={0.001}
-        friction={0.45}
-        linearDamping={0.2}
-        angularDamping={0.1}
+        restitution={0.08}
+        friction={0.15}
+        linearDamping={0.1}
+        angularDamping={0.15}
+        ccd
       >
         {bookContentNode}
       </RigidBody>

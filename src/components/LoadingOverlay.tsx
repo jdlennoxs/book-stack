@@ -10,28 +10,11 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ isLoading }) => {
     }
 
     return (
-        <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(79, 70, 229, 1)', // Use theme background color with opacity
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 999, // Below header but above canvas
-            color: 'white',
-            fontSize: '1.5em',
-            fontFamily: 'Inter, system-ui, sans-serif',
-            transition: 'opacity 0.5s ease-out', // Smooth fade-out
-            opacity: 1,
-            pointerEvents: 'none', // Allow clicks through when faded
-        }}>
-            Loading books...
-            {/* You could add a spinner animation here */}
+        <div id="loading-overlay" className="absolute inset-0 bg-[#4F46E5] flex flex-col justify-center items-center z-[999] text-white font-sans transition-opacity duration-500 ease-out opacity-100 pointer-events-none gap-4">
+            <span className="loading loading-spinner w-12 h-12 text-white"></span>
+            <span className="text-2xl font-normal tracking-wide">Loading books...</span>
         </div>
     );
 };
 
-export default LoadingOverlay; 
+export default LoadingOverlay;

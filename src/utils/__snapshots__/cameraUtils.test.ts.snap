@@ -1,0 +1,217 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Camera Framing Logic Snapshots > desktop resolution (1920x1080) > should match snapshot for 0.2m stack in flat view 1`] = `
+{
+  "position": {
+    "x": 0.4,
+    "y": 1.78,
+    "z": 29.79,
+  },
+  "targetY": 1.78,
+  "zoom": 200,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > desktop resolution (1920x1080) > should match snapshot for 0.2m stack in isometric view 1`] = `
+{
+  "position": {
+    "x": 15.54,
+    "y": 9.8,
+    "z": 23.85,
+  },
+  "targetY": 1.78,
+  "zoom": 200,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > desktop resolution (1920x1080) > should match snapshot for 1.2m stack in flat view 1`] = `
+{
+  "position": {
+    "x": 0.4,
+    "y": 3.76,
+    "z": 29.79,
+  },
+  "targetY": 3.76,
+  "zoom": 94.82,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > desktop resolution (1920x1080) > should match snapshot for 1.2m stack in isometric view 1`] = `
+{
+  "position": {
+    "x": 15.54,
+    "y": 12.5,
+    "z": 23.85,
+  },
+  "targetY": 4.48,
+  "zoom": 79.53,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > desktop resolution (1920x1080) > should match snapshot for 3.0m stack in flat view 1`] = `
+{
+  "position": {
+    "x": 0.4,
+    "y": 8.89,
+    "z": 29.79,
+  },
+  "targetY": 8.89,
+  "zoom": 40.07,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > desktop resolution (1920x1080) > should match snapshot for 3.0m stack in isometric view 1`] = `
+{
+  "position": {
+    "x": 15.54,
+    "y": 18.62,
+    "z": 23.85,
+  },
+  "targetY": 10.6,
+  "zoom": 33.61,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > mobile resolution (390x844) > should match snapshot for 0.2m stack in flat view 1`] = `
+{
+  "position": {
+    "x": 0.4,
+    "y": 1.39,
+    "z": 29.79,
+  },
+  "targetY": 1.39,
+  "zoom": 200,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > mobile resolution (390x844) > should match snapshot for 0.2m stack in isometric view 1`] = `
+{
+  "position": {
+    "x": 15.54,
+    "y": 9.41,
+    "z": 23.85,
+  },
+  "targetY": 1.39,
+  "zoom": 200,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > mobile resolution (390x844) > should match snapshot for 1.2m stack in flat view 1`] = `
+{
+  "position": {
+    "x": 0.4,
+    "y": 3.76,
+    "z": 29.79,
+  },
+  "targetY": 3.76,
+  "zoom": 74.1,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > mobile resolution (390x844) > should match snapshot for 1.2m stack in isometric view 1`] = `
+{
+  "position": {
+    "x": 15.54,
+    "y": 12.5,
+    "z": 23.85,
+  },
+  "targetY": 4.48,
+  "zoom": 62.15,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > mobile resolution (390x844) > should match snapshot for 3.0m stack in flat view 1`] = `
+{
+  "position": {
+    "x": 0.4,
+    "y": 8.89,
+    "z": 29.79,
+  },
+  "targetY": 8.89,
+  "zoom": 31.32,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > mobile resolution (390x844) > should match snapshot for 3.0m stack in isometric view 1`] = `
+{
+  "position": {
+    "x": 15.54,
+    "y": 18.62,
+    "z": 23.85,
+  },
+  "targetY": 10.6,
+  "zoom": 26.27,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > share resolution (1080x1920) > should match snapshot for 0.2m stack in flat view 1`] = `
+{
+  "position": {
+    "x": 0.4,
+    "y": 3.17,
+    "z": 29.79,
+  },
+  "targetY": 3.17,
+  "zoom": 200,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > share resolution (1080x1920) > should match snapshot for 0.2m stack in isometric view 1`] = `
+{
+  "position": {
+    "x": 15.54,
+    "y": 11.19,
+    "z": 23.85,
+  },
+  "targetY": 3.17,
+  "zoom": 200,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > share resolution (1080x1920) > should match snapshot for 1.2m stack in flat view 1`] = `
+{
+  "position": {
+    "x": 0.4,
+    "y": 3.76,
+    "z": 29.79,
+  },
+  "targetY": 3.76,
+  "zoom": 168.57,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > share resolution (1080x1920) > should match snapshot for 1.2m stack in isometric view 1`] = `
+{
+  "position": {
+    "x": 15.54,
+    "y": 12.5,
+    "z": 23.85,
+  },
+  "targetY": 4.48,
+  "zoom": 141.38,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > share resolution (1080x1920) > should match snapshot for 3.0m stack in flat view 1`] = `
+{
+  "position": {
+    "x": 0.4,
+    "y": 8.89,
+    "z": 29.79,
+  },
+  "targetY": 8.89,
+  "zoom": 71.24,
+}
+`;
+
+exports[`Camera Framing Logic Snapshots > share resolution (1080x1920) > should match snapshot for 3.0m stack in isometric view 1`] = `
+{
+  "position": {
+    "x": 15.54,
+    "y": 18.62,
+    "z": 23.85,
+  },
+  "targetY": 10.6,
+  "zoom": 59.75,
+}
+`;

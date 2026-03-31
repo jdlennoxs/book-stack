@@ -28,19 +28,21 @@ export function Ground({ color = "#4F46E5" }: { color?: string }) {
   return (
     <>
       <RigidBody type="fixed" restitution={0.01} friction={1}>
-        <Box args={[500, 1, 500]} position={[0, -0.5, 0]} receiveShadow>
+        <Box args={[2000, 2, 2000]} position={[0, -1, 0]} receiveShadow>
           <meshStandardMaterial color={floorColor} roughness={1} metalness={0} />
         </Box>
       </RigidBody>
       <Grid
         position={[0, 0.01, 0]}
-        args={[100, 100]}
-        sectionSize={2.5}
+        args={[2000, 2000]}
+        cellSize={1}
+        cellThickness={0.5}
+        sectionSize={3.0}
         sectionThickness={1}
         cellColor={gridColor}
         sectionColor={gridColor}
-        fadeDistance={30}
-        fadeStrength={1}
+        fadeDistance={80}
+        fadeStrength={1.5}
         infiniteGrid
       />
     </>

@@ -1,12 +1,12 @@
-export default {
-  async fetch(request, env, ctx) {
+export async function onRequest(context) {
+  const { request, env, ctx } = context;
     const url = new URL(request.url);
 
     // 1. Define the domains allowed to use this proxy
     const allowedOrigins = [
       'http://localhost:5173', // Your Vite local dev server
       'http://localhost:3000',
-      'https://hardcover-books.pages.dev', // Potential production domain
+      'https://jdlennoxs.com', // Potential production domain
       // Add your production domain(s) here!
     ];
 
@@ -90,58 +90,118 @@ export default {
         return new Response('Missing username parameter', { status: 400, headers: corsHeaders });
       }
 
-      // --- Rate Limiting Strategy ---
-      // For a strict 60 RPM global limit, Cloudflare KV or Durable Objects is needed.
-      // If a RATE_LIMITER binding is configured in wrangler.toml, use it:
-      if (env.RATE_LIMITER) {
-        const { success } = await env.RATE_LIMITER.limit({ key: 'hardcover-api' });
-        if (!success) {
-          return new Response('Too Many Requests', { status: 429, headers: corsHeaders });
-        }
-      } 
-      // Fallback simple in-memory check (only works per-isolate, but better than nothing)
-      // Note: For real production use, please configure Rate Limiting in Cloudflare Dashboard.
+      // --- Caching Strategy ---
+      const cacheKey = `graphql:${username}`;
+      let cachedData = null;
+      if (env.BOOK_STACK_CACHE) {
+        cachedData = await env.BOOK_STACK_CACHE.get(cacheKey);
+      }
 
-      const graphqlQuery = `
-        query MyQuery($username: String!) {
-          user_books(where: {user: {username: {_eq: $username}}}) {
-            book {
-              slug
-              title
-              cached_contributors(path: "[\"0\"].author.name")
-              cached_image
-              id
-              pages
-            }
-            user_book_reads(where: {finished_at: {_is_null: false}}) {
-              finished_at
-              user_book {
-                rating
-              }
-            }
+      if (cachedData) {
+        return new Response(cachedData, {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'X-Cache': 'HIT',
           }
+        });
+      }
+
+      // --- Rate Limiting Strategy (KV-based) ---
+      if (env.BOOK_STACK_CACHE) {
+        const now = Math.floor(Date.now() / 1000);
+        const currentMinute = Math.floor(now / 60);
+        const rateLimitKey = `ratelimit:${currentMinute}`;
+        
+        const countStr = await env.BOOK_STACK_CACHE.get(rateLimitKey);
+        const count = countStr ? parseInt(countStr) : 0;
+        
+        if (count >= 60) {
+          return new Response('Rate limit exceeded (60 RPM). Please try again in a minute.', { 
+            status: 429, 
+            headers: {
+              ...corsHeaders,
+              'Retry-After': '60'
+            } 
+          });
         }
-      `;
+        
+        // Use ctx.waitUntil to avoid blocking the request while incrementing
+        // Note: For extreme accuracy, this would need a more complex atomic approach,
+        // but for a simple proxy, this is highly effective.
+        ctx.waitUntil(env.BOOK_STACK_CACHE.put(rateLimitKey, (count + 1).toString(), { expirationTtl: 120 }));
+      }
+
+      const graphqlQuery = `query MyQuery($username: citext!) {
+  user_books(where: {user: {username: {_eq: $username}}, user_book_reads: {finished_at: {_is_null: false}}}) {
+    book {
+      slug
+      title
+      cached_contributors(path: "$.[0].author.name")
+      cached_image
+      id
+      pages
+    }
+    user_book_reads(where: {finished_at: {_is_null: false}}) {
+      finished_at
+      user_book {
+        rating
+      }
+    }
+  }
+}`;
 
       try {
+        const fetchStartTime = Date.now();
+        const authHeader = env.HARDCOVER_API_TOKEN ? `Bearer ${env.HARDCOVER_API_TOKEN}` : '';
         const response = await fetch('https://api.hardcover.app/v1/graphql', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': env.HARDCOVER_API_TOKEN || '', // Passed from secrets
+            'Authorization': authHeader,
           },
           body: JSON.stringify({
+            operationName: "MyQuery",
             query: graphqlQuery,
             variables: { username }
           })
         });
 
+        if (!response.ok) {
+          const errorText = await response.text();
+          return new Response(`Hardcover API Error: ${errorText}`, { 
+            status: response.status, 
+            headers: corsHeaders 
+          });
+        }
+
         const data = await response.json();
-        return new Response(JSON.stringify(data), {
+
+        if (data.errors) {
+          return new Response(JSON.stringify({
+            message: "Hardcover GraphQL Validation Error",
+            errors: data.errors,
+            debug: { query: graphqlQuery, variables: { username } }
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const responseBody = JSON.stringify(data);
+
+        // Store in cache for 1 hour (3600 seconds)
+        if (env.BOOK_STACK_CACHE) {
+          ctx.waitUntil(env.BOOK_STACK_CACHE.put(cacheKey, responseBody, { expirationTtl: 3600 }));
+        }
+
+        return new Response(responseBody, {
           status: response.status,
           headers: {
             ...corsHeaders,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-Cache': 'MISS',
           }
         });
       } catch (error) {

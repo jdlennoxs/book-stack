@@ -1,0 +1,41 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - paragraph [ref=e6]: In 2026 jdlennoxs read
+    - generic [ref=e7]: 0.20 metres
+    - paragraph [ref=e8]: That's the same as... a smartphone
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - textbox "Hardcover Username" [ref=e12]
+        - button "Fetch" [ref=e13] [cursor=pointer]
+      - generic [ref=e15]:
+        - combobox [ref=e16]:
+          - option "2026" [selected]
+          - option "2025"
+          - option "2024"
+          - option "2023"
+          - option "2022"
+        - generic [ref=e17] [cursor=pointer]:
+          - checkbox "Physics" [checked] [ref=e18]
+          - text: Physics
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]: "BG:"
+        - button [ref=e23] [cursor=pointer]
+        - button [ref=e24] [cursor=pointer]
+        - button [ref=e25] [cursor=pointer]
+        - button [ref=e26] [cursor=pointer]
+      - generic [ref=e27]:
+        - button "Isometric View" [ref=e28] [cursor=pointer]:
+          - text: Isometric View
+          - img [ref=e29]
+        - button "Flat View" [ref=e32] [cursor=pointer]:
+          - text: Flat View
+          - img [ref=e33]
+        - button "Share" [ref=e38] [cursor=pointer]:
+          - text: Share
+          - img [ref=e39]
+```

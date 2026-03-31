@@ -4,40 +4,23 @@ import { getComparison } from '../utils/heightComparisons';
 interface TopOverlayProps {
     selectedYear: number | null;
     totalHeightMeters: number;
+    username: string;
 }
 
-export const TopOverlay: React.FC<TopOverlayProps> = ({ selectedYear, totalHeightMeters }) => {
+export const TopOverlay: React.FC<TopOverlayProps> = ({ selectedYear, totalHeightMeters, username }) => {
+    const displayUsername = username || 'jdlennoxs';
+
     return (
-        <div style={{
-            position: 'absolute',
-            top: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1000,
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.5)',
-            padding: '12px 20px',
-            borderRadius: '24px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: '"Inter", system-ui, sans-serif',
-            width: '90%',
-            maxWidth: '380px',
-            textAlign: 'center'
-        }}>
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <p style={{ margin: '0 0 2px 0', fontSize: '0.85rem', color: '#6B7280', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {selectedYear === 0 ? 'All time you read' : `In ${selectedYear} you read`}
+        <div className="absolute top-5 left-1/2 -translate-x-1/2 z-[1000] bg-white/85 backdrop-blur-md border border-white/50 py-3 px-5 rounded-[24px] shadow-[0_10px_40px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] flex items-center justify-center font-sans w-[92%] max-w-[400px] sm:w-[380px] text-center">
+            <div className="flex flex-col justify-center">
+                <p className="m-0 mb-0.5 text-[0.85rem] text-[#6B7280] font-normal uppercase tracking-widest">
+                    {selectedYear === 0 ? `${displayUsername} read` : `In ${selectedYear} ${displayUsername} read`}
                 </p>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#111827', lineHeight: '1.1' }}>
+                <div className="text-[1.4rem] font-semibold text-[#111827] leading-tight">
                     {totalHeightMeters.toFixed(2)} metres
                 </div>
-                <p style={{ margin: '2px 0 0 0', fontSize: '0.85rem', color: '#4B5563', fontWeight: 500 }}>
-                    ≈ {getComparison(totalHeightMeters)}
+                <p className="m-0 mt-0.5 text-[0.85rem] text-[#4B5563] font-normal">
+                    <span className="text-[#6B7280]">That's the same as... </span>{getComparison(totalHeightMeters)}
                 </p>
             </div>
         </div>

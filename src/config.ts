@@ -10,5 +10,7 @@ export const config = {
   // Function to get GraphQL data
   getGraphqlUrl: (username: string) => {
     return `${config.workerUrl}/graphql?username=${encodeURIComponent(username)}`
-  }
+  },
+
+  enableGifCapture: true
 }

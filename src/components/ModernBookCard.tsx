@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { BookData } from '../Book';
 import { BookImage } from './BookImage';
 import { getPageCount } from '../utils/bookUtils';
@@ -18,7 +18,7 @@ export function ModernBookCard({ bookData, isTooltip = false, isPinned = false, 
     // Helper to render star SVGs
     const renderStar = (starType: 'full' | 'half' | 'empty', key: number) => {
         return (
-            <svg key={key} width="16" height="16" viewBox="0 0 24 24" fill={starType === 'full' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <svg key={key} width="14" height="14" viewBox="0 0 24 24" fill={starType === 'full' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                 {starType === 'half' && (
                     <defs>
                         <linearGradient id={`halfGradient-${key}`}>
@@ -35,179 +35,85 @@ export function ModernBookCard({ bookData, isTooltip = false, isPinned = false, 
         );
     };
 
-    const containerStyle: React.CSSProperties = {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        background: isTooltip ? 'rgba(255, 255, 255, 0.85)' : '#ffffff',
-        backdropFilter: isTooltip ? 'blur(12px)' : 'none',
-        WebkitBackdropFilter: isTooltip ? 'blur(12px)' : 'none',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        borderRadius: '16px',
-        padding: '20px',
-        boxShadow: isTooltip
-            ? '0 8px 32px rgba(0, 0, 0, 0.12)'
-            : '0 10px 25px rgba(0, 0, 0, 0.05)',
-        fontFamily: '"Inter", system-ui, -apple-system, sans-serif',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        width: isTooltip ? '280px' : '100%',
-        maxWidth: isTooltip ? '280px' : '100%',
-        boxSizing: 'border-box',
-        textAlign: 'center',
-        pointerEvents: (isTooltip && !isPinned) ? 'none' : 'auto', // Ensures tooltip doesn't interfere with 3D interactions unless pinned
-        position: 'relative'
-    };
-
-    const imageContainerStyle: React.CSSProperties = {
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        marginBottom: '16px',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-    };
-
     return (
-        <div style={containerStyle} className={!isTooltip ? 'modern-book-card-hover' : ''}>
+        <div 
+            className={`flex flex-col items-center font-sans transition-all duration-300 box-border text-center relative rounded-[24px] p-6 
+                ${isTooltip ? 'w-[310px] max-w-[310px] bg-white/90 backdrop-blur-md border border-white/50 shadow-[0_10px_40px_rgba(0,0,0,0.1)]' : 'w-full max-w-full bg-white border border-white/50 shadow-[0_10px_25px_rgba(0,0,0,0.05)]'} 
+                ${!isTooltip ? 'hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] hover:-translate-y-1' : ''}`}
+            style={{ 
+                pointerEvents: (isTooltip && !isPinned) ? 'none' : 'auto' 
+            }}
+        >
             {isPinned && onClose && (
                 <button
                     onClick={onClose}
-                    style={{
-                        position: 'absolute',
-                        top: '12px',
-                        right: '12px',
-                        background: 'rgba(0,0,0,0.05)',
-                        border: 'none',
-                        borderRadius: '50%',
-                        width: '24px',
-                        height: '24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        color: '#374151',
-                        fontSize: '14px',
-                        padding: 0,
-                        zIndex: 10
-                    }}
+                    className="btn btn-circle btn-xs absolute top-4 right-4 bg-gray-100/50 hover:bg-gray-200/50 border-none text-gray-500 z-20"
                     aria-label="Close"
                 >
                     ✕
                 </button>
             )}
 
-            {bookData.book.image && (
-                <div style={imageContainerStyle}>
-                    <BookImage
-                        imageUrl={bookData.book.image.url}
-                        alt={bookData.book.title}
-                        width={160}
-                        height={240}
-                        className="modern-book-cover"
-                    />
-                </div>
-            )}
+            <div className="flex flex-row-reverse sm:flex-col items-start sm:items-center w-full gap-5">
+                {bookData.book.image && (
+                    <div className="relative shrink-0 w-[85px] sm:w-[160px] aspect-[2/3] rounded-xl overflow-hidden shadow-[0_10px_25px_rgba(0,0,0,0.15)] bg-gray-100/50">
+                        <BookImage
+                            imageUrl={bookData.book.image.url}
+                            alt={bookData.book.title}
+                            width={160}
+                            height={240}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                )}
 
-            {bookData.book.id ? (
-                <a
-                    href={`https://hardcover.app/books/${bookData.book.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ textDecoration: 'none', color: 'inherit' }}
-                >
-                    <h3 style={{
-                        margin: '0 0 8px 0',
-                        fontSize: '1.1rem',
-                        fontWeight: 600,
-                        color: '#111827',
-                        lineHeight: '1.4',
-                        transition: 'color 0.2s ease',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px'
-                    }}
-                        onMouseOver={(e) => e.currentTarget.style.color = '#4F46E5'}
-                        onMouseOut={(e) => e.currentTarget.style.color = '#111827'}
-                    >
-                        <span style={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                        }}>
-                            {bookData.book.title}
+                <div className="flex-1 flex flex-col text-center min-w-0">
+                    <div className="flex flex-col items-center">
+                        {bookData.book.id ? (
+                            <a
+                                href={`https://hardcover.app/books/${bookData.book.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="no-underline text-inherit group mb-1.5 w-full"
+                            >
+                                <h3 className="m-0 text-[1.15rem] font-bold text-[#111827] leading-tight transition-colors flex items-center justify-center gap-1.5 group-hover:text-[#4F46E5]">
+                                    {/* Ghost spacer to balance the icon and ensure perfect centering */}
+                                    <span className="w-3 invisible shrink-0" aria-hidden="true" />
+                                    <span className="line-clamp-2">{bookData.book.title}</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                </h3>
+                            </a>
+                        ) : (
+                            <h3 className="m-0 mb-1.5 text-[1.15rem] font-bold text-[#111827] leading-tight line-clamp-2 text-center w-full">
+                                {bookData.book.title}
+                            </h3>
+                        )}
+
+                        <p className="m-0 mb-3 text-[0.8rem] text-[#6B7280] font-medium uppercase tracking-widest line-clamp-1 text-center w-full">
+                            {authors}
+                        </p>
+                    </div>
+
+                    {rating !== undefined && (
+                        <div className="flex items-center justify-center gap-0.5 mb-4 text-amber-400">
+                            {[1, 2, 3, 4, 5].map((star) => {
+                                let starType: 'full' | 'half' | 'empty' = 'empty';
+                                if (rating >= star) starType = 'full';
+                                else if (rating >= star - 0.5) starType = 'half';
+                                return renderStar(starType, star);
+                            })}
+                        </div>
+                    )}
+
+                    <div className="flex items-center justify-center">
+                        <span className="bg-[#F3F4F6] px-3 py-1 rounded-full text-[0.7rem] text-[#4B5563] font-semibold tracking-wide">
+                            {pageCount} PAGES
                         </span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, flexShrink: 0, marginTop: '2px' }}>
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
-                        </svg>
-                    </h3>
-                </a>
-            ) : (
-                <h3 style={{
-                    margin: '0 0 8px 0',
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    color: '#111827',
-                    lineHeight: '1.4',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
-                }}>
-                    {bookData.book.title}
-                </h3>
-            )}
-
-            <p style={{
-                margin: '0 0 6px 0',
-                fontSize: '0.9rem',
-                color: '#4B5563',
-                fontWeight: 500
-            }}>
-                by {authors || 'Unknown Author'}
-            </p>
-
-            {rating !== undefined && (
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px',
-                    margin: '4px 0 12px 0',
-                    color: '#F59E0B' // Amber/Gold color
-                }}>
-                    {[1, 2, 3, 4, 5].map((star) => {
-                        let starType: 'full' | 'half' | 'empty' = 'empty';
-                        if (rating >= star) starType = 'full';
-                        else if (rating >= star - 0.5) starType = 'half';
-                        return renderStar(starType, star);
-                    })}
+                    </div>
                 </div>
-            )}
-
-            <div style={{
-                display: 'flex',
-                gap: '12px',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginTop: '4px'
-            }}>
-                <span style={{
-                    background: '#F3F4F6',
-                    padding: '4px 10px',
-                    borderRadius: '100px',
-                    fontSize: '0.8rem',
-                    color: '#374151',
-                    fontWeight: 500
-                }}>
-                    {pageCount} pages
-                </span>
-
             </div>
-
-
         </div>
     );
 }

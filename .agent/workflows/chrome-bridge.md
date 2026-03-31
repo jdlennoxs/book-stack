@@ -24,7 +24,15 @@ This workflow connects the Antigravity browser tools to a Chrome instance runnin
 > ```
 
 // turbo
-2. **Get the Windows host gateway IP and start the socat port forward:**
+2. **Run Windows Port Proxy Bridge.** Since WSL and Windows run on different networks, Windows must forward the port. This triggers a UAC prompt in Windows — accept the prompt!
+
+```bash
+WIN_HOST=$(ip route show default | awk '{print $3}') && \
+powershell.exe -Command "Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile -Command \"netsh interface portproxy reset; netsh interface portproxy add v4tov4 listenaddress='$WIN_HOST' listenport=9222 connectaddress=127.0.0.1 connectport=9222; New-NetFirewallRule -DisplayName \"Antigravity Bridge\" -Direction Inbound -LocalPort 9222 -Protocol TCP -Action Allow -Profile Any -LocalAddress '$WIN_HOST'\"'"
+```
+
+// turbo
+3. **Get the Windows host gateway IP and start the socat port forward:**
 
 ```bash
 WIN_HOST=$(ip route show default | awk '{print $3}') && \
@@ -35,7 +43,7 @@ socat TCP-LISTEN:9222,fork,reuseaddr TCP:${WIN_HOST}:9222 &
 This forwards WSL's localhost:9222 → Windows host:9222 where Chrome is listening.
 
 // turbo
-3. **Verify the bridge is working:**
+4. **Verify the bridge is working:**
 
 ```bash
 curl -s http://127.0.0.1:9222/json/version | head -5

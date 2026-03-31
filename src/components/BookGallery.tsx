@@ -24,7 +24,7 @@ export function BookGallery({ books }: BookGalleryProps) {
         boxSizing: 'border-box',
       }}>
         {books.map((bookData) => (
-          <ModernBookCard key={bookData.book.title} bookData={bookData} />
+          <ModernBookCard key={`${bookData.book.id}-${bookData.date_added}`} bookData={bookData} />
         ))}
       </div>
     </div>
