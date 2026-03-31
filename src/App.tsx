@@ -1,4 +1,4 @@
-import { useMemo, useState, Suspense, useCallback, useEffect, useRef } from 'react'
+import { useMemo, useState, Suspense, useCallback, useEffect, useRef, lazy } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Preload, OrthographicCamera } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
@@ -8,17 +8,17 @@ import { Book, BookData } from './Book'
 import { getPageCount } from './utils/bookUtils'
 import { calculateBookDepth } from './utils/bookDimensions'
 import { Ground } from './components/Ground'
-import { BookGallery } from './components/BookGallery'
-import { YearlyBookPiles } from './components/YearlyBookPiles'
-import { booksData } from './BookData'
 import LoadingOverlay from './components/LoadingOverlay'
-import { ModernBookCard } from './components/ModernBookCard'
 import { config } from './config'
 import { fetchUserBooks } from './utils/api'
 import { TopOverlay } from './components/TopOverlay'
 import { BottomControls } from './components/BottomControls'
 import { CameraManager, CameraManagerHandle } from './components/CameraManager'
-import { PersonReference } from './components/PersonReference'
+
+const BookGallery = lazy(() => import('./components/BookGallery').then(m => ({ default: m.BookGallery })));
+const YearlyBookPiles = lazy(() => import('./components/YearlyBookPiles').then(m => ({ default: m.YearlyBookPiles })));
+const ModernBookCard = lazy(() => import('./components/ModernBookCard').then(m => ({ default: m.ModernBookCard })));
+const PersonReference = lazy(() => import('./components/PersonReference').then(m => ({ default: m.PersonReference })));
 
 const getComplementaryColor = (hex: string) => {
   const map: Record<string, string> = {
@@ -49,7 +49,7 @@ function App() {
   const loadedBookCount = useRef(0);
   const hasDroppedOnce = useRef(false);
   const [allBooksLoaded, setAllBooksLoaded] = useState(false);
-  const [dynamicBooksData, setDynamicBooksData] = useState<any>(booksData);
+  const [dynamicBooksData, setDynamicBooksData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cameraManagerRef = useRef<CameraManagerHandle>(null);
@@ -62,28 +62,43 @@ function App() {
   // Fetch dynamic data if username changed
   useEffect(() => {
     const fetchName = username || 'jdlennoxs';
-    setIsLoading(true);
-    fetchUserBooks(fetchName)
-      .then(data => {
-        setDynamicBooksData(data);
-        // Only update URL if username was actually typed
-        if (username) {
+    
+    // If it's the default user and we haven't loaded fallback data yet, do it dynamically
+    if (!username && !dynamicBooksData) {
+      setIsLoading(true);
+      import('./BookData').then(m => {
+        setDynamicBooksData(m.booksData);
+        setIsLoading(false);
+      }).catch(err => {
+        console.error('Error loading fallback books:', err);
+        setError('Failed to load initial data');
+        setIsLoading(false);
+      });
+      return;
+    }
+
+    if (username) {
+      setIsLoading(true);
+      fetchUserBooks(fetchName)
+        .then(data => {
+          setDynamicBooksData(data);
           const url = new URL(window.location.href);
           url.searchParams.set('username', username);
           window.history.pushState({}, '', url);
-        }
-        setIsLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching dynamic books:', err);
-        setError(err.message);
-        setIsLoading(false);
-      });
+          setIsLoading(false);
+        })
+        .catch(err => {
+          console.error('Error fetching dynamic books:', err);
+          setError(err.message);
+          setIsLoading(false);
+        });
+    }
   }, [username]);
 
 
   useEffect(() => {
-    const dataToUse = dynamicBooksData?.user_books || booksData.user_books;
+    const dataToUse = dynamicBooksData?.user_books;
+    if (!dataToUse) return;
     dataToUse.forEach((bookData: any) => {
       const url = bookData.book?.cached_image?.url;
       if (url) {
@@ -94,7 +109,8 @@ function App() {
   }, [dynamicBooksData]);
 
   const books = useMemo(() => {
-    const sourceBooks = dynamicBooksData?.user_books || booksData.user_books;
+    if (!dynamicBooksData) return [];
+    const sourceBooks = dynamicBooksData.user_books;
     if (!sourceBooks) return [];
 
     const currentYear = new Date().getFullYear();
@@ -474,7 +490,11 @@ function App() {
 
             <Ground color={backgroundColor} />
 
-            {showPerson && <PersonReference position={[-3.2, 0, 0]} height={13} />}
+            {showPerson && (
+              <Suspense fallback={null}>
+                <PersonReference position={[-3.2, 0, 0]} height={13} />
+              </Suspense>
+            )}
 
             <Suspense fallback={null}>
               {singleYearBooks.map((bookData, index) => {
@@ -528,9 +548,13 @@ function App() {
           <fog attach="fog" args={[backgroundColor, 40, 150]} />
         </Canvas>
       ) : viewMode === 'yearly' ? (
-        <YearlyBookPiles books={books} isPhysicsEnabled={physicsStarted && userPhysicsEnabled} />
+        <Suspense fallback={<LoadingOverlay isLoading={true} />}>
+          <YearlyBookPiles books={books} isPhysicsEnabled={physicsStarted && userPhysicsEnabled} />
+        </Suspense>
       ) : (
-        <BookGallery books={books} />
+        <Suspense fallback={<LoadingOverlay isLoading={true} />}>
+          <BookGallery books={books} />
+        </Suspense>
       )}
 
       {viewMode === '3d' && (pinnedBook || hoveredBook) && (
@@ -544,12 +568,14 @@ function App() {
           width: window.innerWidth < 768 ? '92%' : 'auto',
           maxWidth: window.innerWidth < 768 ? '400px' : 'none'
         }}>
-          <ModernBookCard
-            bookData={(hoveredBook || pinnedBook)!}
-            isTooltip={true}
-            isPinned={!!pinnedBook && (!hoveredBook || hoveredBook.book.title === pinnedBook.book.title)}
-            onClose={() => setPinnedBook(null)}
-          />
+          <Suspense fallback={null}>
+            <ModernBookCard
+              bookData={(hoveredBook || pinnedBook)!}
+              isTooltip={true}
+              isPinned={!!pinnedBook && (!hoveredBook || hoveredBook.book.title === pinnedBook.book.title)}
+              onClose={() => setPinnedBook(null)}
+            />
+          </Suspense>
         </div>
       )}
     </div>
