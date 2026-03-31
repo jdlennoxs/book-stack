@@ -1,19 +1,11 @@
-name = "hardcover-proxy"
-main = "worker.js"
+name = "book-stack"
+pages_build_output_dir = "dist"
 compatibility_date = "2024-03-12"
-preview_urls = false
 
-# Local development variables
-[vars]
-# HARDCOVER_API_TOKEN = "your-token-here" (set this in .dev.vars for local dev)
-
-# Rate Limiting configuration (requires a plan that supports it)
-# If you are on the Free plan, you might need to use the Cloudflare Dashboard 
-# or a KV-based approach for strict global limiting.
-# However, this is the standard way to define it in wrangler.toml:
+# KV Cache for Book Stack
 [[kv_namespaces]]
 binding = "BOOK_STACK_CACHE"
-id = "d55f8a31bbc6438dbe83742586f5c867" 
+id = "d55f8a31bbc6438dbe83742586f5c867"
 
 # [[rate_limiting]]
 # binding = "RATE_LIMITER"
