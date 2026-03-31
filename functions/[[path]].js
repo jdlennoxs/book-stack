@@ -95,6 +95,7 @@ export async function onRequest(context) {
 }`;
 
     try {
+      console.log('HARDCOVER_API_TOKEN available:', !!env.HARDCOVER_API_TOKEN, 'Length:', (env.HARDCOVER_API_TOKEN || "").length);
       const authHeader = env.HARDCOVER_API_TOKEN ? `Bearer ${env.HARDCOVER_API_TOKEN}` : '';
       const response = await fetch('https://api.hardcover.app/v1/graphql', {
         method: 'POST',
