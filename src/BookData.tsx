@@ -55,7 +55,7 @@ const tutorialBooks = [
 export const booksData: BooksDataType = {
     "user_books": tutorialBooks.map((info, index) => {
         const colorObj = colors[index % colors.length];
-        const date = new Date(2024, 0, 1 + index).toISOString().split('T')[0];
+        const date = new Date(2024, 0, tutorialBooks.length - index).toISOString().split('T')[0];
         return {
             "book": {
                 "slug": `tutorial-${index}`,
