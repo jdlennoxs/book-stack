@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:all": "wrangler pages dev --proxy 5173 --kv=BOOK_STACK_CACHE -- npm run dev",
+    "dev:all": "npx wrangler pages dev --proxy 5173 --kv=BOOK_STACK_CACHE -- npm run dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",

@@ -46,92 +46,6 @@ export const booksData: any = {
     "user_books": [
         {
             "book": {
-                "slug": "a-storm-of-swords",
-                "title": "A Storm of Swords",
-                "cached_contributors": "George R.R. Martin",
-                "cached_image": {
-                    "id": 845107,
-                    "url": "https://assets.hardcover.app/book_mappings/7332349/5249dbcbc118ae4ea68c37295c8386f96c341c95.jpeg",
-                    "color": "#203f1c",
-                    "width": 400,
-                    "height": 640,
-                    "color_name": "Brown"
-                },
-                "id": 236,
-                "pages": 992
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2014-07-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
-        {
-            "book": {
-                "slug": "a-game-of-thrones",
-                "title": "A Game of Thrones",
-                "cached_contributors": "George R.R. Martin",
-                "cached_image": {
-                    "id": 5685532,
-                    "url": "https://assets.hardcover.app/edition/12841472/a63e7ea1-9064-4eb8-afb4-5372db40aed2.jpg",
-                    "color": "#11497d",
-                    "width": 311,
-                    "height": 475,
-                    "color_name": "Purple"
-                },
-                "id": 644,
-                "pages": 694
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2013-11-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
-        {
-            "book": {
-                "slug": "american-gods",
-                "title": "American Gods",
-                "cached_contributors": "Neil Gaiman",
-                "cached_image": {
-                    "id": 943222,
-                    "url": "https://assets.hardcover.app/external_data/30222505/3e02a50c5ecf68835504b66795c7553ae9cc6d98.jpeg",
-                    "color": "#32382e",
-                    "width": 339,
-                    "height": 500,
-                    "color_name": "Brown"
-                },
-                "id": 657,
-                "pages": 480
-            },
-            "user_book_reads": []
-        },
-        {
-            "book": {
-                "slug": "the-buried-giant",
-                "title": "The Buried Giant",
-                "cached_contributors": "Kazuo Ishiguro",
-                "cached_image": {
-                    "id": 847011,
-                    "url": "https://assets.hardcover.app/external_data/59800787/456c0b0456f3afa6a2c9d12b334ad9304b5b2165.jpeg",
-                    "color": "#214d78",
-                    "width": 128,
-                    "height": 197,
-                    "color_name": "Purple"
-                },
-                "id": 3257,
-                "pages": 317
-            },
-            "user_book_reads": []
-        },
-        {
-            "book": {
                 "slug": "the-master-algorithm",
                 "title": "The Master Algorithm: How the Quest for the Ultimate Learning Machine Will Remake Our World",
                 "cached_contributors": "Pedro Domingos",
@@ -266,31 +180,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "the-sisters-brothers",
-                "title": "The Sisters Brothers",
-                "cached_contributors": "Patrick deWitt",
-                "cached_image": {
-                    "id": 6713671,
-                    "url": "https://assets.hardcover.app/edition/30400475/9c3871af-8de4-4cff-be4e-c1bd39b9a913.jpg",
-                    "color": "#f3eaa6",
-                    "width": 306,
-                    "height": 475,
-                    "color_name": "Beige"
-                },
-                "id": 33745,
-                "pages": 344
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2016-09-01",
-                    "user_book": {
-                        "rating": 5
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "municipal-dreams",
@@ -452,31 +342,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "catch-22",
-                "title": "Catch-22",
-                "cached_contributors": "Joseph Heller",
-                "cached_image": {
-                    "id": 1679052,
-                    "url": "https://assets.hardcover.app/external_data/42405814/c68d88de91ba5949246d092447d76dd6e030d0d4.jpeg",
-                    "color": "#5e5c6f",
-                    "width": 328,
-                    "height": 500,
-                    "color_name": "Purple"
-                },
-                "id": 70825,
-                "pages": 466
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2014-02-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "dataclysm",
@@ -846,31 +712,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "genghis-bones-of-the-hills-2008",
-                "title": "Genghis: Bones of the Hills",
-                "cached_contributors": "Conn Iggulden",
-                "cached_image": {
-                    "id": 1316323,
-                    "url": "https://assets.hardcover.app/external_data/60076052/92f33c243b9b3de72f5fb1aa7c30e273314e78a3.jpeg",
-                    "color": "#4b6c2b",
-                    "width": 98,
-                    "height": 152,
-                    "color_name": "Brown"
-                },
-                "id": 130257,
-                "pages": 434
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2016-12-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "under-the-skin",
@@ -971,56 +813,8 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "a-dance-with-dragons",
-                "title": "A Dance with Dragons",
-                "cached_contributors": "George R.R. Martin",
-                "cached_image": {
-                    "id": 2924082,
-                    "url": "https://assets.hardcover.app/external_data/60312701/d2c85ef45f183d295c497ecda8018b40d3974ffb.jpeg",
-                    "color": "#adafaf",
-                    "width": 329,
-                    "height": 500,
-                    "color_name": "Beige"
-                },
-                "id": 144636,
-                "pages": 1016
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2015-05-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
-        {
-            "book": {
-                "slug": "world-war-z",
-                "title": "World War Z: An Oral History of the Zombie War",
-                "cached_contributors": "Max Brooks",
-                "cached_image": {
-                    "id": 418176,
-                    "url": "https://assets.hardcover.app/edition/3129764/6391724-L.jpg",
-                    "color": "#9a2807",
-                    "width": 333,
-                    "height": 500,
-                    "color_name": "Brown"
-                },
-                "id": 147196,
-                "pages": 354
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2014-02-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
+
+
         {
             "book": {
                 "slug": "to-kill-a-mockingbird",
@@ -1200,37 +994,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "wolf-of-the-plains",
-                "title": "Wolf Of The Plains",
-                "cached_contributors": "Conn Iggulden",
-                "cached_image": {
-                    "id": 5408790,
-                    "url": "https://assets.hardcover.app/edition/23895900/a587da7f7b12b7d1ba9f89b188976f7539193512.jpeg",
-                    "color": "#aeada9",
-                    "width": 500,
-                    "height": 500,
-                    "color_name": "Silver"
-                },
-                "id": 174655,
-                "pages": 484
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2015-04-01",
-                    "user_book": {
-                        "rating": 5
-                    }
-                },
-                {
-                    "finished_at": "2015-03-01",
-                    "user_book": {
-                        "rating": 5
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "piranesi",
@@ -1679,31 +1443,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "the-martian",
-                "title": "The Martian",
-                "cached_contributors": "Andy Weir",
-                "cached_image": {
-                    "id": 3645365,
-                    "url": "https://assets.hardcover.app/editions/21716111/5323176149970177.jpg",
-                    "color": "#c05011",
-                    "width": 790,
-                    "height": 1200,
-                    "color_name": "Brown"
-                },
-                "id": 292354,
-                "pages": 384
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2015-02-01",
-                    "user_book": {
-                        "rating": 5
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "a-severed-head",
@@ -1772,31 +1512,7 @@ export const booksData: any = {
             },
             "user_book_reads": []
         },
-        {
-            "book": {
-                "slug": "the-chrysalids",
-                "title": "The Chrysalids",
-                "cached_contributors": "John Wyndham",
-                "cached_image": {
-                    "id": 4178561,
-                    "url": "https://assets.hardcover.app/edition/21439610/628f97a07af48a4a90ce851f1c15cadee6ba5661.jpeg",
-                    "color": "#791513",
-                    "width": 313,
-                    "height": 500,
-                    "color_name": "Brown"
-                },
-                "id": 326093,
-                "pages": 312
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2015-01-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "harry-potter-and-the-philosophers-stone",
@@ -1983,31 +1699,7 @@ export const booksData: any = {
             },
             "user_book_reads": []
         },
-        {
-            "book": {
-                "slug": "animal-farm",
-                "title": "Animal Farm",
-                "cached_contributors": "George Orwell",
-                "cached_image": {
-                    "id": 5690226,
-                    "url": "https://assets.hardcover.app/edition/31488479/fe6ec5f0-ab7e-4448-b5f7-26ef763c328f.jpg",
-                    "color": "#fdfcfc",
-                    "width": 290,
-                    "height": 475,
-                    "color_name": "White"
-                },
-                "id": 356467,
-                "pages": 140
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2016-01-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "manhattan-beach",
@@ -2420,31 +2112,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "a-feast-for-crows",
-                "title": "A Feast for Crows",
-                "cached_contributors": "George R.R. Martin",
-                "cached_image": {
-                    "id": 416274,
-                    "url": "https://assets.hardcover.app/edition/2789048/8570883-L.jpg",
-                    "color": "#b81704",
-                    "width": 304,
-                    "height": 500,
-                    "color_name": "Brown"
-                },
-                "id": 377011,
-                "pages": 1106
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2014-10-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "the-great-gatsby",
@@ -2581,31 +2249,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "the-catcher-in-the-rye",
-                "title": "The Catcher in the Rye",
-                "cached_contributors": "J. D. Salinger",
-                "cached_image": {
-                    "id": 1418492,
-                    "url": "https://assets.hardcover.app/editions/20025793/2524829738512264-91YXaY-I9VS._SL1500_.jpg",
-                    "color": "#ba140a",
-                    "width": 1046,
-                    "height": 1500,
-                    "color_name": "Red"
-                },
-                "id": 381379,
-                "pages": 277
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2014-01-01",
-                    "user_book": {
-                        "rating": 3
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "the-sense-of-an-ending",
@@ -2631,31 +2275,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "the-day-of-the-triffids",
-                "title": "The Day of the Triffids",
-                "cached_contributors": "John Wyndham",
-                "cached_image": {
-                    "id": 457598,
-                    "url": "https://assets.hardcover.app/edition/17928877/8191102-L.jpg",
-                    "color": "#bfbdb9",
-                    "width": 302,
-                    "height": 495,
-                    "color_name": "Silver"
-                },
-                "id": 381999,
-                "pages": 272
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2015-01-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "little-fires-everywhere",
@@ -2817,31 +2437,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "a-clash-of-kings",
-                "title": "A Clash of Kings",
-                "cached_contributors": "George R.R. Martin",
-                "cached_image": {
-                    "id": 3880164,
-                    "url": "https://assets.hardcover.app/edition/7441206/83b941d8f996468d946641f3674e9b26461a3ddc.jpeg",
-                    "color": "#532604",
-                    "width": 332,
-                    "height": 500,
-                    "color_name": "Brown"
-                },
-                "id": 427374,
-                "pages": 770
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2014-03-01",
-                    "user_book": {
-                        "rating": 5
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "the-invisible-life-of-addie-larue",
@@ -3716,31 +3312,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "how-not-to-be-wrong",
-                "title": "How Not to Be Wrong: The Power of Mathematical Thinking",
-                "cached_contributors": "Jordan Ellenberg",
-                "cached_image": {
-                    "id": 4565675,
-                    "url": "https://assets.hardcover.app/edition/28199175/422d7cec71ec32ef23f13b4c030730058bb76925.jpeg",
-                    "color": "#3b8d91",
-                    "width": 336,
-                    "height": 500,
-                    "color_name": "Purple"
-                },
-                "id": 432946,
-                "pages": 480
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2017-01-01",
-                    "user_book": {
-                        "rating": 3
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "happy-city",
@@ -4267,31 +3839,7 @@ export const booksData: any = {
             },
             "user_book_reads": []
         },
-        {
-            "book": {
-                "slug": "undermajordomo-minor",
-                "title": "Undermajordomo Minor",
-                "cached_contributors": "Patrick deWitt",
-                "cached_image": {
-                    "id": 5594683,
-                    "url": "https://assets.hardcover.app/edition/20778069/4fdfc143-81c4-49e8-8b25-4fc3a2b6f575.jpg",
-                    "color": "#bb0605",
-                    "width": 664,
-                    "height": 1000,
-                    "color_name": "Red"
-                },
-                "id": 440540,
-                "pages": 336
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2017-01-01",
-                    "user_book": {
-                        "rating": 5
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "a-master-of-djinn",
@@ -6096,31 +5644,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "forces-of-nature-2014",
-                "title": "Forces of Nature",
-                "cached_contributors": "Andrew    Cohen",
-                "cached_image": {
-                    "id": 5400863,
-                    "url": "https://assets.hardcover.app/edition/30525184/653201688198d383da11a926c03fa999c4ee4984.jpeg",
-                    "color": "#7c7877",
-                    "width": 390,
-                    "height": 500,
-                    "color_name": "Gray"
-                },
-                "id": 564376,
-                "pages": 288
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2016-07-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "ablutions",
@@ -7653,31 +7177,7 @@ export const booksData: any = {
                 }
             ]
         },
-        {
-            "book": {
-                "slug": "the-revenant",
-                "title": "The Revenant",
-                "cached_contributors": "Michael Punke",
-                "cached_image": {
-                    "id": 6491623,
-                    "url": "https://assets.hardcover.app/edition/30413142/7f780d02942a542bc18fa93a2648d3713746bf92.jpeg",
-                    "color": "#1b3e65",
-                    "width": 349,
-                    "height": 500,
-                    "color_name": "Purple"
-                },
-                "id": 1969167,
-                "pages": 272
-            },
-            "user_book_reads": [
-                {
-                    "finished_at": "2016-06-01",
-                    "user_book": {
-                        "rating": 4
-                    }
-                }
-            ]
-        },
+
         {
             "book": {
                 "slug": "the-old-man-and-the-sea",

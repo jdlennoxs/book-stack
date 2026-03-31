@@ -1,5 +1,5 @@
 export async function onRequest(context) {
-  const { request, env, ctx } = context;
+  const { request, env, waitUntil } = context;
   const url = new URL(request.url);
 
   // --- ENDPOINT: /image-proxy ---
@@ -72,7 +72,7 @@ export async function onRequest(context) {
         });
       }
       
-      ctx.waitUntil(env.BOOK_STACK_CACHE.put(rateLimitKey, (count + 1).toString(), { expirationTtl: 120 }));
+      waitUntil(env.BOOK_STACK_CACHE.put(rateLimitKey, (count + 1).toString(), { expirationTtl: 120 }));
     }
 
     const graphqlQuery = `query MyQuery($username: citext!) {
@@ -129,7 +129,7 @@ export async function onRequest(context) {
       const responseBody = JSON.stringify(data);
 
       if (env.BOOK_STACK_CACHE) {
-        ctx.waitUntil(env.BOOK_STACK_CACHE.put(cacheKey, responseBody, { expirationTtl: 3600 }));
+        waitUntil(env.BOOK_STACK_CACHE.put(cacheKey, responseBody, { expirationTtl: 3600 }));
       }
 
       return new Response(responseBody, {
