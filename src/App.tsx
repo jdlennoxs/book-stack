@@ -521,6 +521,7 @@ function App() {
                     position={[randomX, yPosition, randomZ]}
                     data={bookData}
                     onHover={(isHovered) => {
+                      if (!username) return;
                       if (isHovered) {
                         setHoveredBook(bookData);
                       } else if (hoveredBook === bookData) {
@@ -528,6 +529,7 @@ function App() {
                       }
                     }}
                     onClick={() => {
+                      if (!username) return;
                       if (pinnedBook === bookData) setPinnedBook(null);
                       else {
                         setPinnedBook(bookData);
@@ -549,7 +551,7 @@ function App() {
         </Canvas>
       ) : viewMode === 'yearly' ? (
         <Suspense fallback={<LoadingOverlay isLoading={true} />}>
-          <YearlyBookPiles books={books} isPhysicsEnabled={physicsStarted && userPhysicsEnabled} />
+          <YearlyBookPiles books={books} isPhysicsEnabled={physicsStarted && userPhysicsEnabled} showCards={!!username} />
         </Suspense>
       ) : (
         <Suspense fallback={<LoadingOverlay isLoading={true} />}>

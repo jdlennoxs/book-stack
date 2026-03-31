@@ -13,9 +13,10 @@ import { ModernBookCard } from './ModernBookCard'
 type YearlyBookPilesProps = {
   books: BookData[];
   isPhysicsEnabled: boolean;
+  showCards?: boolean;
 }
 
-export function YearlyBookPiles({ books, isPhysicsEnabled }: YearlyBookPilesProps) {
+export function YearlyBookPiles({ books, isPhysicsEnabled, showCards = true }: YearlyBookPilesProps) {
   const [hoveredBook, setHoveredBook] = useState<BookData | null>(null);
 
   // Group books by year
@@ -49,7 +50,7 @@ export function YearlyBookPiles({ books, isPhysicsEnabled }: YearlyBookPilesProp
 
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#FFF', position: 'relative' }}>
-      {hoveredBook && (
+      {showCards && hoveredBook && (
         <div style={{
           position: 'absolute',
           top: '80px',
@@ -119,7 +120,7 @@ export function YearlyBookPiles({ books, isPhysicsEnabled }: YearlyBookPilesProp
                   key={`${bookData.book.id}-${bookData.date_added}`}
                   position={[yearIndex * pileSpacing + randomX, yPosition, randomZ]}
                   data={bookData}
-                  onHover={(isHovered) => setHoveredBook(isHovered ? bookData : null)}
+                  onHover={(isHovered) => showCards && setHoveredBook(isHovered ? bookData : null)}
                   isPhysicsEnabled={isPhysicsEnabled}
                 />
               );
