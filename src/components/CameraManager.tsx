@@ -13,7 +13,7 @@ export interface CameraManagerHandle {
         totalPhysicsHeight: number,
         viewAngle: 'flat' | 'isometric',
         username: string
-    }) => Promise<string>;
+    }) => Promise<Blob>;
 }
 
 export const CameraManager = forwardRef<CameraManagerHandle, { target: [number, number, number] }>(({ target }, ref) => {
@@ -134,7 +134,7 @@ export const CameraManager = forwardRef<CameraManagerHandle, { target: [number, 
             outCanvas.width = 1080
             outCanvas.height = 1920
             const ctx = outCanvas.getContext('2d')
-            if (!ctx) return ''
+            if (!ctx) throw new Error('Could not get canvas context');
 
             // Pre-fill the background color natively so side-letterboxing is seamless and invisible
             let bgColor = '#4F46E5';
@@ -242,7 +242,12 @@ export const CameraManager = forwardRef<CameraManagerHandle, { target: [number, 
             ctx.textBaseline = 'middle';
             ctx.fillText(watermarkText, centerX, pillY + pillHeight / 2 + 2); // optical center
 
-            return outCanvas.toDataURL('image/png')
+            return new Promise<Blob>((resolve, reject) => {
+                outCanvas.toBlob((blob) => {
+                    if (blob) resolve(blob);
+                    else reject(new Error('Canvas toBlob failed'));
+                }, 'image/png');
+            });
         }
     }))
 

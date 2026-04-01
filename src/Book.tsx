@@ -3,6 +3,7 @@ import { Box, useTexture } from '@react-three/drei'
 import { RigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
 import { createSpineTextures } from './utils/createSpineTexture'
+import { createPlaceholderTexture } from './utils/createPlaceholderTexture'
 import { calculateBaseWidth, calculateBookDepth } from './utils/bookDimensions'
 import { getPageCount } from './utils/bookUtils'
 import {
@@ -57,15 +58,24 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
   // Load the cover texture using proxy and useTexture
   const coverUrl = data.book.image?.url
     ? config.getProxiedImageUrl(data.book.image.url)
-    : '/cover.jpeg';
+    : null;
 
-  const rawCoverTexture = useTexture(coverUrl);
+  const rawCoverTexture = useTexture(coverUrl || '/default_cover.png');
+  
+  const placeholderTexture = useMemo(() => {
+    if (!coverUrl) {
+      return createPlaceholderTexture(data.book.image?.color || '#4A5568');
+    }
+    return null;
+  }, [coverUrl, data.book.image?.color]);
+
   const coverTexture = useMemo(() => {
+    if (placeholderTexture) return placeholderTexture;
     if (!rawCoverTexture) return rawCoverTexture;
     const cloned = rawCoverTexture.clone();
     cloned.colorSpace = THREE.SRGBColorSpace;
     return cloned;
-  }, [rawCoverTexture]);
+  }, [rawCoverTexture, placeholderTexture]);
 
   const pageCount = getPageCount(data)
   const baseWidth = calculateBaseWidth(pageCount)

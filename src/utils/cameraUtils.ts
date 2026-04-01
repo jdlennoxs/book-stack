@@ -27,7 +27,7 @@ export const calculateFraming = (
     const targetScreenPixels = viewportHeightPixels * targetPercentage;
 
     // Power factor 0.94 is more conservative for tall stacks as per user preference
-    const heightFactor = Math.pow(heightForCalc, 0.92);
+    const heightFactor = Math.pow(heightForCalc, 0.91);
     let optimalZoom = targetScreenPixels / heightFactor;
 
     // Clamp optimalZoom with a higher cap to allow tight framing on small stacks

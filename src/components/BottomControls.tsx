@@ -15,6 +15,7 @@ interface BottomControlsProps {
     setShowPerson: (show: boolean) => void;
     onUsernameSubmit: (username: string) => void;
     viewAngle: 'flat' | 'isometric';
+    isSharing?: boolean;
 }
 
 export const BottomControls: React.FC<BottomControlsProps> = ({
@@ -29,7 +30,8 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
     onShare,
     onCenterCamera,
     onUsernameSubmit,
-    viewAngle
+    viewAngle,
+    isSharing = false
 }) => {
     const [username, setUsername] = useState(() => {
         const params = new URLSearchParams(window.location.search);
@@ -138,8 +140,9 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
 
                     <button
                         onClick={onShare}
-                        className="btn btn-sm border-none text-white font-medium cursor-pointer hover:opacity-90 transition-opacity tooltip tooltip-top"
-                        data-tip="Share"
+                        disabled={isSharing}
+                        className={`btn btn-sm border-none text-white font-medium cursor-pointer hover:opacity-90 transition-opacity tooltip tooltip-top ${isSharing ? 'loading pointer-events-none' : ''}`}
+                        data-tip={isSharing ? "Preparing..." : "Share"}
                         style={{
                             height: '36px',
                             width: '36px',
@@ -150,11 +153,14 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
                             boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)'
                         }}
                     >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-                            <polyline points="16 6 12 2 8 6"></polyline>
-                            <line x1="12" y1="2" x2="12" y2="15"></line>
-                        </svg>
+                        {!isSharing && (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                                <polyline points="16 6 12 2 8 6"></polyline>
+                                <line x1="12" y1="2" x2="12" y2="15"></line>
+                            </svg>
+                        )}
+                        {isSharing && <span className="loading loading-spinner loading-xs"></span>}
                     </button>
                 </div>
             </div>

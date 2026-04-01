@@ -39,23 +39,26 @@ const colors = [
 ];
 
 const tutorialBooks = [
-    { title: "Make your own stack.", author: "Vertical Life", pages: 350 },
-    { title: "Enter a hardcover", author: "Hardcover.app", pages: 420 },
-    { title: "username", author: "You", pages: 280 },
+    { title: "Welcome to", author: "Vertical Life", pages: 250 },
+    { title: "Book-stack", author: "Vertical Life", pages: 350 },
+    { title: "Enter your hardcover", author: "Hardcover.app", pages: 280 },
+    { title: "hardcover username", author: "You", pages: 280 },
     { title: "in", author: "The Destination", pages: 200 },
-    { title: "the box below", author: "Input", pages: 320 },
+    { title: "The Box Below", author: "Input", pages: 320 },
     { title: "and", author: "Execution", pages: 180 },
     { title: "see your own", author: "Reflection", pages: 400 },
-    { title: "reading history", author: "The Past", pages: 460 },
-    { title: "as a", author: "Transformation", pages: 220 },
+    { title: "Reading History", author: "The Past", pages: 460 },
+    { title: "as a shareable", author: "Transformation", pages: 220 },
     { title: "TOWER", author: "The Heights", pages: 680 },
-    { title: "you can share", author: "The Community", pages: 350 }
+    { title: " ", author: "Transformation", pages: 220 },
+    { title: "Can you topple the tower?", author: "The Community", pages: 350 }
 ];
 
 export const booksData: BooksDataType = {
     "user_books": tutorialBooks.map((info, index) => {
         const colorObj = colors[index % colors.length];
-        const date = new Date(2024, 0, tutorialBooks.length - index).toISOString().split('T')[0];
+        const currentYear = new Date().getFullYear();
+        const date = new Date(currentYear, 0, tutorialBooks.length - index).toISOString().split('T')[0];
         return {
             "book": {
                 "slug": `tutorial-${index}`,
