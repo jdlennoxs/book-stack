@@ -134,25 +134,7 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
                 </div>
 
                 <div className="flex gap-2 items-center">
-                    <button
-                        onClick={() => onCenterCamera('isometric')}
-                        className={`btn btn-sm cursor-pointer shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-colors tooltip tooltip-top border-none`}
-                        data-tip="Isometric View"
-                        style={{
-                            height: '36px',
-                            width: '36px',
-                            padding: 0,
-                            borderRadius: '12px',
-                            backgroundColor: viewAngle === 'isometric' ? backgroundColor : '#fff',
-                            color: viewAngle === 'isometric' ? getContrastColor(backgroundColor) : '#374151'
-                        }}
-                    >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                        </svg>
-                    </button>
+
 
                     <button
                         onClick={() => onCenterCamera('flat')}
@@ -171,6 +153,26 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
                             <rect x="4" y="4" width="16" height="4" rx="1" />
                             <rect x="4" y="10" width="16" height="4" rx="1" />
                             <rect x="4" y="16" width="16" height="4" rx="1" />
+                        </svg>
+                    </button>
+
+                    <button
+                        onClick={() => onCenterCamera('isometric')}
+                        className={`btn btn-sm cursor-pointer shadow-[0_2px_4px_rgba(0,0,0,0.05)] transition-colors tooltip tooltip-top border-none`}
+                        data-tip="Isometric View"
+                        style={{
+                            height: '36px',
+                            width: '36px',
+                            padding: 0,
+                            borderRadius: '12px',
+                            backgroundColor: viewAngle === 'isometric' ? backgroundColor : '#fff',
+                            color: viewAngle === 'isometric' ? getContrastColor(backgroundColor) : '#374151'
+                        }}
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
                         </svg>
                     </button>
 
