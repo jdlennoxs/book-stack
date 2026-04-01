@@ -1,12 +1,14 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-body {
+html, body {
   margin: 0;
   padding: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
   font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-weight: 300;
 }

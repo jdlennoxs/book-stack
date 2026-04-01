@@ -282,6 +282,18 @@ function App() {
     }
   }, [allBooksLoaded, viewMode]);
 
+  // Fix for mobile keyboard "white bar" issue
+  useEffect(() => {
+    const handleFocusOut = () => {
+      // Small delay to let the keyboard start dismissing
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 50);
+    };
+    window.addEventListener('focusout', handleFocusOut);
+    return () => window.removeEventListener('focusout', handleFocusOut);
+  }, []);
+
   useEffect(() => {
     if (viewMode === '3d' && allBooksLoaded && cameraManagerRef.current) {
       // Small delay to ensure controls are ready
@@ -371,7 +383,7 @@ function App() {
   const isSceneLoading = (viewMode === '3d' && (!allBooksLoaded || (!hasDroppedOnce.current && !physicsStarted))) || isLoading;
 
   return (
-    <div style={{ width: '100%', height: '100dvh', background: backgroundColor, position: 'relative', overflow: 'hidden', color: '#000' }}>
+    <div style={{ width: '100%', height: '100%', background: backgroundColor, position: 'relative', overflow: 'hidden', color: '#000' }}>
       <LoadingOverlay isLoading={isSceneLoading} />
 
       {error && (
