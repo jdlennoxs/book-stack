@@ -21,9 +21,8 @@ export const calculateFraming = (
     // Balanced power function: 0.94 is closer to linear for small stacks 
     // but still prevents extreme zoom-out for very tall towers.
     // Set distinct percentages to account for isometric depth vs flat height
-    // Set distinct percentages to account for isometric depth vs flat height
     // We adjust these to ensure the stack is prominent but doesn't clip the edges on mobile.
-    const targetPercentage = 0.52;
+    const targetPercentage = viewAngle === 'flat' ? 0.52 : 0.48;
     const targetScreenPixels = viewportHeightPixels * targetPercentage;
 
     // Power factor 0.94 is more conservative for tall stacks as per user preference
