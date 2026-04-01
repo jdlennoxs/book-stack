@@ -22,11 +22,11 @@ export const calculateFraming = (
     // but still prevents extreme zoom-out for very tall towers.
     // Set distinct percentages to account for isometric depth vs flat height
     // We adjust these to ensure the stack is prominent but doesn't clip the edges on mobile.
-    const targetPercentage = viewAngle === 'flat' ? 0.51 : 0.48;
+    const targetPercentage = viewAngle === 'flat' ? 0.51 : 0.47;
     const targetScreenPixels = viewportHeightPixels * targetPercentage;
 
     // Power factor 0.94 is more conservative for tall stacks as per user preference
-    const heightFactor = Math.pow(heightForCalc, 0.91);
+    const heightFactor = Math.pow(heightForCalc, 0.92);
     let optimalZoom = targetScreenPixels / heightFactor;
 
     // Clamp optimalZoom with a higher cap to allow tight framing on small stacks
@@ -37,7 +37,7 @@ export const calculateFraming = (
     // Focal point (32% from base) ensures resolution-independence and better grounding.
     // The stack base sits perfectly at ~19-20% from the bottom of the screen.
     // We move it slightly higher for isometric mode to avoid collision with bottom UI on mobile.
-    const targetYFactor = viewAngle === 'isometric' ? 0.32 : 0.31;
+    const targetYFactor = viewAngle === 'isometric' ? 0.30 : 0.31;
     const targetY = viewportHeightMeters * targetYFactor;
 
     const distance = 30;
