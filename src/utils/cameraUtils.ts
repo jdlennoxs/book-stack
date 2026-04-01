@@ -37,7 +37,7 @@ export const calculateFraming = (
     // Focal point (32% from base) ensures resolution-independence and better grounding.
     // The stack base sits perfectly at ~19-20% from the bottom of the screen.
     // We move it slightly higher for isometric mode to avoid collision with bottom UI on mobile.
-    const targetYFactor = viewAngle === 'isometric' ? 0.28 : 0.31;
+    const targetYFactor = viewAngle === 'isometric' ? 0.28 : 0.30;
     const targetY = viewportHeightMeters * targetYFactor;
 
     const distance = 30;
