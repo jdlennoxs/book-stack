@@ -14,6 +14,7 @@ import { fetchUserBooks } from './utils/api'
 import { TopOverlay } from './components/TopOverlay'
 import { BottomControls } from './components/BottomControls'
 import { CameraManager, CameraManagerHandle } from './components/CameraManager'
+import { ShareModal } from './components/ShareModal'
 
 const BookGallery = lazy(() => import('./components/BookGallery').then(m => ({ default: m.BookGallery })));
 const YearlyBookPiles = lazy(() => import('./components/YearlyBookPiles').then(m => ({ default: m.YearlyBookPiles })));
@@ -46,6 +47,8 @@ function App() {
 
   const [viewMode] = useState<'3d' | 'gallery' | 'yearly'>('3d');
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [useFeetAndInches, setUseFeetAndInches] = useState(false);
+  const [excludeAudiobooks, setExcludeAudiobooks] = useState(false);
   const loadedBookCount = useRef(0);
   const hasDroppedOnce = useRef(false);
   const [allBooksLoaded, setAllBooksLoaded] = useState(false);
@@ -53,6 +56,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
+  const [lastBlob, setLastBlob] = useState<Blob | null>(null);
   const cameraManagerRef = useRef<CameraManagerHandle>(null);
 
   const [username, setUsername] = useState(() => {
@@ -126,6 +130,7 @@ function App() {
           read_count: 1,
           updated_at: read.finished_at,
           rating: read.user_book?.rating || null,
+          reading_format: read.user_book?.edition?.reading_format?.format || null,
           book: {
             user_added: false,
             id: bookData.book.id,
@@ -166,6 +171,10 @@ function App() {
       filteredBooks = books.filter(book => new Date(book.date_added).getFullYear() === selectedYear);
     }
 
+    if (excludeAudiobooks) {
+      filteredBooks = filteredBooks.filter(book => book.reading_format !== 'Listened');
+    }
+
     if (testHeight) {
       // Mock some books to reach the target height roughly
       // We duplicate the available books to reach the target height if necessary
@@ -188,7 +197,7 @@ function App() {
     }
 
     return filteredBooks;
-  }, [books, selectedYear]);
+  }, [books, selectedYear, excludeAudiobooks]);
 
   // Handle test view angle override
   useEffect(() => {
@@ -319,11 +328,9 @@ function App() {
     try {
       setIsSharing(true);
       // 1. Snapshot preparation
-      // For the actual snap/screenshot, we instantly clamp the height geometry 
-      // to avoid snapping mid-lerp
       cameraManagerRef.current.snapToCentroid(totalPhysicsHeight, viewAngle, true);
 
-      // 2. Take screenshot as Blob (now synchronous to preserve user gesture)
+      // 2. Take screenshot as Blob
       const blob = cameraManagerRef.current.takeScreenshot({
         year: selectedYear || 'All Time',
         height: `${totalHeightMeters.toFixed(2)}m`,
@@ -341,48 +348,58 @@ function App() {
       // 3. Create file for sharing
       const file = new File([blob], 'book-stack.png', { type: 'image/png' });
 
-      // Robust check for navigator.share and canShare
+      // Robust check for navigator.share and canShare specifically for FILES
       const canShareFiles = typeof navigator.canShare === 'function' && 
                            typeof navigator.share === 'function' && 
                            navigator.canShare({ files: [file] });
 
       if (canShareFiles) {
         try {
-          // navigator.share is the FIRST await point, reached synchronously from the click! 
           await navigator.share({
             files: [file],
             title: 'My Book Stack',
             text: `I read ${totalHeightMeters.toFixed(2)}m of books this year!`,
+            url: window.location.href,
           });
-          // Successful share
           setIsSharing(false);
           return;
         } catch (shareErr: any) {
-          // If it's an AbortError, user just cancelled, no fallback needed
           if (shareErr.name === 'AbortError') {
              setIsSharing(false);
              return;
           }
-          console.warn('Native share failed, falling back to download:', shareErr);
-          // Fall through to download fallback below
+          console.warn('Native file share failed:', shareErr);
         }
       }
 
-      // 4. Fallback to download (if share not supported or failed)
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `book-stack-${selectedYear || 'all-time'}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      // 4. Fallback: Show the premium ShareModal
+      setLastBlob(blob);
+      const modal = document.getElementById('share_modal') as HTMLDialogElement;
+      if (modal) {
+        modal.showModal();
+      }
 
     } catch (err) {
       console.error('Error sharing:', err);
     } finally {
       setIsSharing(false);
     }
+  };
+
+  const handleDownload = () => {
+    if (!lastBlob) return;
+    const url = URL.createObjectURL(lastBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `book-stack-${selectedYear || 'all-time'}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
   };
 
   const isSceneLoading = (viewMode === '3d' && (!allBooksLoaded || (!hasDroppedOnce.current && !physicsStarted))) || isLoading;
@@ -414,6 +431,7 @@ function App() {
           selectedYear={selectedYear}
           totalHeightMeters={totalHeightMeters}
           username={username}
+          useFeetAndInches={useFeetAndInches}
         />
       )}
 
@@ -433,6 +451,18 @@ function App() {
         setShowPerson={setShowPerson}
         onUsernameSubmit={setUsername}
         viewAngle={viewAngle}
+        useFeetAndInches={useFeetAndInches}
+        setUseFeetAndInches={setUseFeetAndInches}
+        excludeAudiobooks={excludeAudiobooks}
+        setExcludeAudiobooks={setExcludeAudiobooks}
+      />
+
+      <ShareModal
+        id="share_modal"
+        url={window.location.href}
+        text={`I read ${totalHeightMeters.toFixed(2)}m of books this year!`}
+        onDownload={handleDownload}
+        onCopy={handleCopyLink}
       />
 
       {viewMode === '3d' ? (

@@ -16,7 +16,9 @@ export const calculateFraming = (
     viewportHeightPixels: number,
     maxZoomCap: number = 150
 ): FramingResult => {
-    const heightForCalc = Math.max(totalHeight, 0.25);
+    // Cap the vertical framing at 3.0m (which is about 20 physics units given 1u = 0.15m)
+    // After this point, the camera stops zooming out and stays focused on the lower part of the tower.
+    const heightForCalc = Math.min(Math.max(totalHeight, 0.25), 20.0);
 
     // Balanced power function: 0.94 is closer to linear for small stacks 
     // but still prevents extreme zoom-out for very tall towers.

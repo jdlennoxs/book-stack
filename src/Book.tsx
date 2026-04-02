@@ -19,6 +19,7 @@ export type BookData = {
   read_count: number
   updated_at: string
   rating?: number
+  reading_format?: string
   book: {
     user_added: boolean
     title: string
@@ -170,7 +171,7 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
       }}
     >
       {/* Outer book cover */}
-      <Box args={[baseWidth + 0.01, height + 0.01, depth + 0.01]} position={[0, depth / 2, 0]} castShadow frustumCulled={false}>
+      <Box args={[baseWidth + 0.01, height + 0.01, depth + 0.01]} position={[0, depth / 2, 0]} castShadow>
         <primitive attach="material-0" object={transparentMaterial} />
         <primitive attach="material-1" object={detailedTexturesLoaded && textures ? spineMaterial : coverMaterial} />
         <primitive attach="material-2" object={transparentMaterial} />
@@ -180,7 +181,7 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
       </Box>
 
       {/* Inner book pages */}
-      <Box args={[baseWidth, height, depth]} position={[-0.0009, depth / 2, 0]} castShadow frustumCulled={false}>
+      <Box args={[baseWidth, height, depth]} position={[-0.0009, depth / 2, 0]} castShadow>
         <primitive attach="material-0" object={pageMaterial} />
         <primitive attach="material-1" object={pageMaterial} />
         <primitive attach="material-2" object={pageMaterial} />

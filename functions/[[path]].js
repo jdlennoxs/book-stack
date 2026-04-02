@@ -103,6 +103,11 @@ export async function onRequest(context) {
       finished_at
       user_book {
         rating
+        edition {
+          reading_format {
+            format
+          }
+        }
       }
     }
   }

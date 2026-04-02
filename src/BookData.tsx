@@ -4,6 +4,11 @@ export type BooksDataType = {
             finished_at: string
             user_book: {
                 rating: number | null
+                edition: {
+                    reading_format: {
+                        format: string
+                    } | null
+                } | null
             } | null
         }[]
         book: {
@@ -44,6 +49,7 @@ const tutorialBooks = [
     { title: "Enter your hardcover", author: "Hardcover.app", pages: 280 },
     { title: "hardcover username", author: "You", pages: 280 },
     { title: "in", author: "The Destination", pages: 200 },
+    { title: " ", author: "Transformation", pages: 220 },
     { title: "The Box Below", author: "Input", pages: 320 },
     { title: "and", author: "Execution", pages: 180 },
     { title: "see your own", author: "Reflection", pages: 400 },
@@ -79,7 +85,12 @@ export const booksData: BooksDataType = {
                 {
                     "finished_at": date,
                     "user_book": {
-                        "rating": 5
+                        "rating": 5,
+                        "edition": {
+                            "reading_format": {
+                                "format": index % 5 === 0 ? "Listened" : "Physical"
+                            }
+                        }
                     }
                 }
             ]

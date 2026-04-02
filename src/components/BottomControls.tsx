@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+
 interface BottomControlsProps {
     viewMode: '3d' | 'gallery' | 'yearly';
     selectedYear: number | null;
@@ -16,6 +17,10 @@ interface BottomControlsProps {
     onUsernameSubmit: (username: string) => void;
     viewAngle: 'flat' | 'isometric';
     isSharing?: boolean;
+    useFeetAndInches: boolean;
+    setUseFeetAndInches: (enabled: boolean) => void;
+    excludeAudiobooks: boolean;
+    setExcludeAudiobooks: (enabled: boolean) => void;
 }
 
 const getContrastColor = (hexColor: string) => {
@@ -39,12 +44,17 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
     onCenterCamera,
     onUsernameSubmit,
     viewAngle,
-    isSharing = false
+    isSharing = false,
+    useFeetAndInches,
+    setUseFeetAndInches,
+    excludeAudiobooks,
+    setExcludeAudiobooks
 }) => {
     const [username, setUsername] = useState(() => {
         const params = new URLSearchParams(window.location.search);
         return params.get('username') || '';
     });
+    const [showSettings, setShowSettings] = useState(false);
 
     const handleUsernameSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -96,19 +106,61 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
                     )}
 
                     {(viewMode === '3d' || viewMode === 'yearly') && (
-                        <label className="cursor-pointer select-none flex items-center gap-1.5 text-[#4B5563] font-medium">
-                            <input
-                                type="checkbox"
-                                checked={userPhysicsEnabled}
-                                onChange={(e) => setUserPhysicsEnabled(e.target.checked)}
-                                className={`checkbox checkbox-sm rounded border-[#D1D5DB]`}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowSettings(!showSettings)}
+                                className={`flex items-center justify-center rounded-lg transition-colors border border-gray-200 text-[#4B5563] cursor-pointer shadow-[0_2px_4px_rgba(0,0,0,0.05)]`}
                                 style={{
-                                    backgroundColor: userPhysicsEnabled ? backgroundColor : 'white',
-                                    borderColor: userPhysicsEnabled ? 'transparent' : '#D1D5DB'
+                                    height: '32px',
+                                    width: '32px',
+                                    backgroundColor: showSettings ? backgroundColor : 'rgba(255, 255, 255, 0.6)',
+                                    color: showSettings ? getContrastColor(backgroundColor) : '#4B5563'
                                 }}
-                            />
-                            Physics
-                        </label>
+                                title="Settings"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showSettings ? 'rotate(45deg)' : 'none', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                            </button>
+
+                            {showSettings && (
+                                <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-white border border-gray-200 p-4 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.15)] flex flex-col gap-3 min-w-[200px] animate-in fade-in slide-in-from-bottom-2 duration-200 z-[1001]">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <span className="text-[#4B5563] font-medium uppercase text-[0.65rem] tracking-wider">Physics</span>
+                                        <input
+                                            type="checkbox"
+                                            checked={userPhysicsEnabled}
+                                            onChange={(e) => setUserPhysicsEnabled(e.target.checked)}
+                                            className="toggle toggle-sm"
+                                            style={{ '--tbc': backgroundColor } as any}
+                                        />
+                                    </div>
+                                    <div className="h-px bg-gray-100" />
+                                    <div className="flex items-center justify-between gap-4">
+                                        <span className="text-[#4B5563] font-medium uppercase text-[0.65rem] tracking-wider">Feet & Inches</span>
+                                        <input
+                                            type="checkbox"
+                                            checked={useFeetAndInches}
+                                            onChange={(e) => setUseFeetAndInches(e.target.checked)}
+                                            className="toggle toggle-sm"
+                                            style={{ '--tbc': backgroundColor } as any}
+                                        />
+                                    </div>
+                                    <div className="h-px bg-gray-100" />
+                                    <div className="flex items-center justify-between gap-4">
+                                        <span className="text-[#4B5563] font-medium uppercase text-[0.65rem] tracking-wider">Exclude Audiobooks</span>
+                                        <input
+                                            type="checkbox"
+                                            checked={excludeAudiobooks}
+                                            onChange={(e) => setExcludeAudiobooks(e.target.checked)}
+                                            className="toggle toggle-sm"
+                                            style={{ '--tbc': backgroundColor } as any}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
 
