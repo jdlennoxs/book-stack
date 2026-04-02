@@ -224,7 +224,7 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
         ref={bodyRef}
         position={position}
         colliders="cuboid"
-        restitution={0.08}
+        restitution={0.01}
         friction={0.2}
         linearDamping={0.75}
         angularDamping={0.1}
