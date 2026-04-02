@@ -41,8 +41,8 @@ export type BookData = {
 type BookProps = {
   position: [number, number, number]
   data: BookData
-  onHover: (isHovered: boolean) => void
-  onClick?: () => void
+  onHover: (isHovered: boolean, data: BookData) => void
+  onClick?: (data: BookData) => void
   isPhysicsEnabled: boolean
   onLoad?: () => void
   index?: number
@@ -189,11 +189,11 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
     <group
       rotation={[-Math.PI / 2, 0, Math.PI / 2]}
       ref={meshRef}
-      onPointerOver={() => onHover(true)}
-      onPointerOut={() => onHover(false)}
+      onPointerOver={() => onHover(true, data)}
+      onPointerOut={() => onHover(false, data)}
       onClick={(e) => {
         e.stopPropagation();
-        if (onClick) onClick();
+        if (onClick) onClick(data);
       }}
     >
       {/* Outer book cover */}
@@ -242,4 +242,19 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
   }
 }
 
-export const Book = React.memo(BookComponent);
+export const Book = React.memo(BookComponent, (prevProps, nextProps) => {
+  if (prevProps.index !== nextProps.index) return false;
+  if (prevProps.isPhysicsEnabled !== nextProps.isPhysicsEnabled) return false;
+  if (prevProps.data !== nextProps.data) return false;
+  if (prevProps.onLoad !== nextProps.onLoad) return false;
+  
+  if (
+    prevProps.position[0] !== nextProps.position[0] ||
+    prevProps.position[1] !== nextProps.position[1] ||
+    prevProps.position[2] !== nextProps.position[2]
+  ) {
+    return false;
+  }
+  
+  return true;
+});

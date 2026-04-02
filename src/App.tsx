@@ -64,6 +64,21 @@ function App() {
     return params.get('username') || '';
   });
 
+  const handleBookHover = useCallback((isHovered: boolean, bookData: BookData) => {
+    if (!username) return;
+    if (isHovered) {
+      setHoveredBook(bookData);
+    } else {
+      setHoveredBook((prev) => (prev === bookData ? null : prev));
+    }
+  }, [username]);
+
+  const handleBookClick = useCallback((bookData: BookData) => {
+    if (!username) return;
+    setPinnedBook((prev) => (prev === bookData ? null : bookData));
+    setHoveredBook(null);
+  }, [username]);
+
   // Fetch dynamic data if username changed
   useEffect(() => {
     const fetchName = username || 'jdlennoxs';
@@ -475,7 +490,7 @@ function App() {
             paused={!physicsStarted || !allBooksLoaded || !userPhysicsEnabled}
             timeStep="vary"
             interpolate={false}
-            numSolverIterations={4}
+            numSolverIterations={8}
             numInternalPgsIterations={10}
           >
             <ambientLight intensity={0.8} />
@@ -585,22 +600,8 @@ function App() {
                     index={index}
                     position={[randomX, yPosition, randomZ]}
                     data={bookData}
-                    onHover={(isHovered) => {
-                      if (!username) return;
-                      if (isHovered) {
-                        setHoveredBook(bookData);
-                      } else if (hoveredBook === bookData) {
-                        setHoveredBook(null);
-                      }
-                    }}
-                    onClick={() => {
-                      if (!username) return;
-                      if (pinnedBook === bookData) setPinnedBook(null);
-                      else {
-                        setPinnedBook(bookData);
-                        setHoveredBook(null);
-                      }
-                    }}
+                    onHover={handleBookHover}
+                    onClick={handleBookClick}
                     isPhysicsEnabled={mountPhysicsNode}
                     onLoad={handleBookLoad}
                   />

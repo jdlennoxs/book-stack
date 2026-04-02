@@ -11,7 +11,7 @@ describe('Camera Framing Logic Snapshots', () => {
     const testCases = [
         { label: '0.2m', height: 0.2 / 0.15 },
         { label: '1.2m', height: 1.2 / 0.15 },
-        { label: '3.0m', height: 3.0 / 0.15 }
+        { label: '4.0m', height: 4.0 / 0.15 }
     ];
     const angles: ('flat' | 'isometric')[] = ['flat', 'isometric'];
 
