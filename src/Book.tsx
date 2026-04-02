@@ -62,7 +62,7 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
     : null;
 
   const rawCoverTexture = useTexture(coverUrl || '/default_cover.png');
-  
+
   const placeholderTexture = useMemo(() => {
     if (!coverUrl) {
       return createPlaceholderTexture(data.book.image?.color || '#4A5568');
@@ -197,9 +197,9 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
       <RigidBody
         position={position}
         colliders="cuboid"
-        restitution={0.08}
-        friction={0.15}
-        linearDamping={0.1}
+        restitution={0.01}
+        friction={0.2}
+        linearDamping={0.5}
         angularDamping={0.15}
         canSleep={true}
       >
