@@ -49,6 +49,8 @@ function getContrastTextColor(bgColor: string): string {
   return luminance < 0.5 ? '#FFFFFF' : '#000000'
 }
 
+const textureCache = new Map<string, { colorTexture: THREE.CanvasTexture }>();
+
 // Create textures with the book title
 async function createSpineTextures(
   title: string,
@@ -56,6 +58,11 @@ async function createSpineTextures(
   depth: number,
   height: number
 ): Promise<{ colorTexture: THREE.CanvasTexture }> {
+  const cacheKey = `${title}-${bgColor}-${depth}-${height}`;
+  if (textureCache.has(cacheKey)) {
+    return textureCache.get(cacheKey)!;
+  }
+
   // Wait for fonts to load before proceeding
   await fontsLoaded
 
@@ -275,7 +282,10 @@ async function createSpineTextures(
   //   colorTexture: colorTexture.uuid,
   // })
 
+  const result = { colorTexture };
+  textureCache.set(cacheKey, result);
+
   // Update return value
-  return { colorTexture }
+  return result
 }
 export { createSpineTextures }

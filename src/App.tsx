@@ -477,7 +477,6 @@ function App() {
             interpolate={false}
             numSolverIterations={4}
             numInternalPgsIterations={10}
-            maxCcdSubsteps={2}
           >
             <ambientLight intensity={0.8} />
             <directionalLight

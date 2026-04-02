@@ -1,9 +1,16 @@
 import * as THREE from 'three'
 
+const placeholderCache = new Map<string, THREE.CanvasTexture>();
+
 export function createPlaceholderTexture(
   color: string,
   emoji: string = '📖'
 ): THREE.CanvasTexture {
+  const cacheKey = `${color}-${emoji}`;
+  if (placeholderCache.has(cacheKey)) {
+    return placeholderCache.get(cacheKey)!;
+  }
+
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')!
   
@@ -32,5 +39,6 @@ export function createPlaceholderTexture(
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
   texture.needsUpdate = true
+  placeholderCache.set(cacheKey, texture);
   return texture
 }

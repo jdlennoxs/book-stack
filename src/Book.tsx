@@ -181,7 +181,7 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
       </Box>
 
       {/* Inner book pages */}
-      <Box args={[baseWidth, height, depth]} position={[-0.0009, depth / 2, 0]} castShadow>
+      <Box args={[baseWidth, height, depth]} position={[-0.0009, depth / 2, 0]}>
         <primitive attach="material-0" object={pageMaterial} />
         <primitive attach="material-1" object={pageMaterial} />
         <primitive attach="material-2" object={pageMaterial} />
@@ -201,7 +201,7 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
         friction={0.15}
         linearDamping={0.1}
         angularDamping={0.15}
-        ccd
+        canSleep={true}
       >
         {bookContentNode}
       </RigidBody>

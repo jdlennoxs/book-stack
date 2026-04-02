@@ -2,9 +2,7 @@ import * as THREE from 'three'
 
 export function createTransparentMaterial(): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({
-    transparent: true,
-    opacity: 0,
-    side: THREE.DoubleSide
+    visible: false
   })
 }
 
@@ -15,8 +13,7 @@ export function createCoverMaterial(color: string, texture?: THREE.Texture): THR
     roughness: 0.6,
     metalness: 0.1,
     clearcoat: 0.3,
-    clearcoatRoughness: 0.6,
-    side: THREE.DoubleSide
+    clearcoatRoughness: 0.6
   })
 }
 
@@ -30,8 +27,7 @@ export function createSpineMaterial(
       roughness: 0.6,
       metalness: 0.1,
       clearcoat: 0.3,
-      clearcoatRoughness: 0.6,
-      side: THREE.DoubleSide
+      clearcoatRoughness: 0.6
     })
   }
 
@@ -40,8 +36,7 @@ export function createSpineMaterial(
     roughness: 0.6,
     metalness: 0.1,
     clearcoat: 0.3,
-    clearcoatRoughness: 0.6,
-    side: THREE.DoubleSide
+    clearcoatRoughness: 0.6
   })
 }
 
