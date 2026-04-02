@@ -40,7 +40,7 @@ const colors = [
 
 const tutorialBooks = [
     { title: "Welcome to", author: "Vertical Life", pages: 250 },
-    { title: "Book-stack", author: "Vertical Life", pages: 350 },
+    { title: "bookstack", author: "Vertical Life", pages: 350 },
     { title: "Enter your hardcover", author: "Hardcover.app", pages: 280 },
     { title: "hardcover username", author: "You", pages: 280 },
     { title: "in", author: "The Destination", pages: 200 },

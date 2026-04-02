@@ -321,10 +321,10 @@ function App() {
       // 1. Snapshot preparation
       // For the actual snap/screenshot, we instantly clamp the height geometry 
       // to avoid snapping mid-lerp
-      await cameraManagerRef.current.snapToCentroid(totalPhysicsHeight, viewAngle, true);
+      cameraManagerRef.current.snapToCentroid(totalPhysicsHeight, viewAngle, true);
 
-      // 2. Take screenshot as Blob (we remove the 100ms delay to keep the user gesture alive for Safari)
-      const blob = await cameraManagerRef.current.takeScreenshot({
+      // 2. Take screenshot as Blob (now synchronous to preserve user gesture)
+      const blob = cameraManagerRef.current.takeScreenshot({
         year: selectedYear || 'All Time',
         height: `${totalHeightMeters.toFixed(2)}m`,
         comparison: getComparison(totalHeightMeters),
@@ -338,43 +338,48 @@ function App() {
         return;
       }
 
-      // 4. Share or download
+      // 3. Create file for sharing
       const file = new File([blob], 'book-stack.png', { type: 'image/png' });
 
       // Robust check for navigator.share and canShare
-      // Some browsers (Firefox) might support share but not file sharing specifically
-      const canShareFiles = typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
+      const canShareFiles = typeof navigator.canShare === 'function' && 
+                           typeof navigator.share === 'function' && 
+                           navigator.canShare({ files: [file] });
 
       if (canShareFiles) {
         try {
+          // navigator.share is the FIRST await point, reached synchronously from the click! 
           await navigator.share({
             files: [file],
             title: 'My Book Stack',
             text: `I read ${totalHeightMeters.toFixed(2)}m of books this year!`,
           });
+          // Successful share
+          setIsSharing(false);
+          return;
         } catch (shareErr: any) {
           // If it's an AbortError, user just cancelled, no fallback needed
           if (shareErr.name === 'AbortError') {
              setIsSharing(false);
              return;
           }
-          throw shareErr; // Re-throw for general fallback below
+          console.warn('Native share failed, falling back to download:', shareErr);
+          // Fall through to download fallback below
         }
-      } else {
-        // Fallback to download
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `book-stack-${selectedYear || 'all-time'}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
+
+      // 4. Fallback to download (if share not supported or failed)
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `book-stack-${selectedYear || 'all-time'}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
     } catch (err) {
       console.error('Error sharing:', err);
-      // Fallback for any error during the process
-      // We don't have the blob here if it failed early, but we try as best as we can
     } finally {
       setIsSharing(false);
     }

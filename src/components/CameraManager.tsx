@@ -13,7 +13,7 @@ export interface CameraManagerHandle {
         totalPhysicsHeight: number,
         viewAngle: 'flat' | 'isometric',
         username: string
-    }) => Promise<Blob>;
+    }) => Blob;
 }
 
 export const CameraManager = forwardRef<CameraManagerHandle, { target: [number, number, number] }>(({ target }, ref) => {
@@ -81,7 +81,7 @@ export const CameraManager = forwardRef<CameraManagerHandle, { target: [number, 
                 }
             }
         },
-        takeScreenshot: async (metadata) => {
+        takeScreenshot: (metadata) => {
             // 0. Save current camera state to restore later
             const originalPosition = camera.position.clone();
             const orthoCamera = camera as THREE.OrthographicCamera;
@@ -133,7 +133,7 @@ export const CameraManager = forwardRef<CameraManagerHandle, { target: [number, 
             const outCanvas = document.createElement('canvas')
             outCanvas.width = 1080
             outCanvas.height = 1920
-            const ctx = outCanvas.getContext('2d')
+            const ctx = outCanvas.getContext('2d', { willReadFrequently: true })
             if (!ctx) throw new Error('Could not get canvas context');
 
             // Pre-fill the background color natively so side-letterboxing is seamless and invisible
@@ -169,7 +169,11 @@ export const CameraManager = forwardRef<CameraManagerHandle, { target: [number, 
 
             // Glassmorphic backdrop precisely mirrored
             ctx.beginPath()
-            ctx.roundRect(boxX, boxY, boxWidth, boxHeight, cornerRadius)
+            if (ctx.roundRect) {
+                ctx.roundRect(boxX, boxY, boxWidth, boxHeight, cornerRadius)
+            } else {
+                ctx.rect(boxX, boxY, boxWidth, boxHeight)
+            }
             ctx.fillStyle = 'rgba(255, 255, 255, 0.85)' // Match bg-white/85 class
             ctx.fill()
 
@@ -233,7 +237,11 @@ export const CameraManager = forwardRef<CameraManagerHandle, { target: [number, 
             const pillY = 1920 - 80 - pillHeight;
 
             ctx.beginPath();
-            ctx.roundRect(pillX, pillY, pillWidth, pillHeight, pillHeight / 2);
+            if (ctx.roundRect) {
+                ctx.roundRect(pillX, pillY, pillWidth, pillHeight, pillHeight / 2);
+            } else {
+                ctx.rect(pillX, pillY, pillWidth, pillHeight);
+            }
             ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.fill();
 
@@ -242,12 +250,15 @@ export const CameraManager = forwardRef<CameraManagerHandle, { target: [number, 
             ctx.textBaseline = 'middle';
             ctx.fillText(watermarkText, centerX, pillY + pillHeight / 2 + 2); // optical center
 
-            return new Promise<Blob>((resolve, reject) => {
-                outCanvas.toBlob((blob) => {
-                    if (blob) resolve(blob);
-                    else reject(new Error('Canvas toBlob failed'));
-                }, 'image/png');
-            });
+            // 6. Return Blob synchronously to keep the event loop "clean" for navigator.share
+            // Using toDataURL and manual conversion because toBlob is asynchronous
+            const dataUrl = outCanvas.toDataURL('image/png');
+            const [, base64] = dataUrl.split(',');
+            const binary = atob(base64);
+            const array = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
+            
+            return new Blob([array], { type: 'image/png' });
         }
     }))
 
