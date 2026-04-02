@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react'
 import { Box, useTexture } from '@react-three/drei'
-import { RigidBody } from '@react-three/rapier'
+import { RigidBody, RapierRigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
 import { createSpineTextures } from './utils/createSpineTexture'
 import { createPlaceholderTexture } from './utils/createPlaceholderTexture'
@@ -50,6 +50,7 @@ type BookProps = {
 
 function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onLoad, index = 0 }: BookProps) {
   const meshRef = useRef<THREE.Group>(null!)
+  const bodyRef = useRef<RapierRigidBody>(null!)
   const isLoadedRef = useRef(false); // Ref to track if onLoad has been called for this instance
   const [textures, setTextures] = useState<{
     colorTexture: THREE.CanvasTexture;
@@ -158,6 +159,31 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
     }
   }, [data.book.title, data.book.image?.color, depth, height, coverTexture, onLoad, detailedTexturesLoaded]);
 
+  useEffect(() => {
+    if (!isPhysicsEnabled) return;
+
+    const handleExplode = () => {
+      if (bodyRef.current) {
+        // Stagger explosions across a few frames to prevent Rapier WASM "recursive use" crash
+        setTimeout(() => {
+          if (bodyRef.current) {
+            try {
+              const yForce = -(Math.random() * 30 + 50);
+              bodyRef.current.applyImpulse({
+                x: (Math.random() - 0.5) * 50, y: yForce, z: 0
+              }, true);
+            } catch (err) {
+              // Ignore errors if the body became invalid or physics paused during the timeout
+            }
+          }
+        }, Math.random() * 100);
+      }
+    };
+
+    window.addEventListener('EXPLODE_TOWER', handleExplode);
+    return () => window.removeEventListener('EXPLODE_TOWER', handleExplode);
+  }, [isPhysicsEnabled]);
+
 
   const bookContentNode = (
     <group
@@ -195,13 +221,14 @@ function BookComponent({ position, data, onHover, onClick, isPhysicsEnabled, onL
   if (isPhysicsEnabled) {
     return (
       <RigidBody
+        ref={bodyRef}
         position={position}
         colliders="cuboid"
-        restitution={0.01}
+        restitution={0.08}
         friction={0.2}
-        linearDamping={0.5}
-        angularDamping={0.15}
-        canSleep={true}
+        linearDamping={0.75}
+        angularDamping={0.1}
+      // canSleep={true}
       >
         {bookContentNode}
       </RigidBody>

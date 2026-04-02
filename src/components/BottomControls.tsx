@@ -158,6 +158,14 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
                                             style={{ '--tbc': backgroundColor } as any}
                                         />
                                     </div>
+                                    <div className="h-px bg-gray-100" />
+                                    <button 
+                                        onClick={() => window.dispatchEvent(new CustomEvent('EXPLODE_TOWER'))} 
+                                        className="btn btn-sm btn-ghost text-red-500 hover:bg-red-50"
+                                        style={{ fontSize: '0.7rem' }}
+                                    >
+                                        🧨 EXPLODE TOWER
+                                    </button>
                                 </div>
                             )}
                         </div>

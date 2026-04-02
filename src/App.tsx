@@ -67,7 +67,7 @@ function App() {
   // Fetch dynamic data if username changed
   useEffect(() => {
     const fetchName = username || 'jdlennoxs';
-    
+
     // If it's the default user and we haven't loaded fallback data yet, do it dynamically
     if (!username && !dynamicBooksData) {
       setIsLoading(true);
@@ -165,7 +165,7 @@ function App() {
     // Hidden test override for visual tests 
     const params = new URLSearchParams(window.location.search);
     const testHeight = params.get('testHeight');
-    
+
     let filteredBooks = books;
     if (selectedYear !== null) {
       filteredBooks = books.filter(book => new Date(book.date_added).getFullYear() === selectedYear);
@@ -183,7 +183,7 @@ function App() {
       const targetUnits = parseFloat(testHeight) / 0.15;
       let currentUnits = 0;
       const mocked: BookData[] = [];
-      
+
       const sourcePool = books.length > 0 ? books : filteredBooks;
 
       if (sourcePool.length > 0) {
@@ -349,9 +349,9 @@ function App() {
       const file = new File([blob], 'book-stack.png', { type: 'image/png' });
 
       // Robust check for navigator.share and canShare specifically for FILES
-      const canShareFiles = typeof navigator.canShare === 'function' && 
-                           typeof navigator.share === 'function' && 
-                           navigator.canShare({ files: [file] });
+      const canShareFiles = typeof navigator.canShare === 'function' &&
+        typeof navigator.share === 'function' &&
+        navigator.canShare({ files: [file] });
 
       if (canShareFiles) {
         try {
@@ -365,8 +365,8 @@ function App() {
           return;
         } catch (shareErr: any) {
           if (shareErr.name === 'AbortError') {
-             setIsSharing(false);
-             return;
+            setIsSharing(false);
+            return;
           }
           console.warn('Native file share failed:', shareErr);
         }
