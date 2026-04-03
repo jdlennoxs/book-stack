@@ -36,7 +36,7 @@ export function Ground({ color = "#4F46E5" }: { color?: string }) {
         position={[0, 0.01, 0]}
         args={[300, 100, gridColor, gridColor]}
         material-transparent={true}
-        material-opacity={0.4}
+        material-opacity={0.3}
       />
     </>
   )
