@@ -36,12 +36,12 @@ export function Ground({ color = "#4F46E5" }: { color?: string }) {
         position={[0, 0.01, 0]}
         args={[2000, 2000]}
         cellSize={1}
-        cellThickness={0.5}
+        cellThickness={1}
         sectionSize={3.0}
-        sectionThickness={1}
+        sectionThickness={1.2}
         cellColor={gridColor}
         sectionColor={gridColor}
-        fadeDistance={80}
+        fadeDistance={50}
         fadeStrength={1.5}
         infiniteGrid
       />

@@ -125,7 +125,7 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
                             </button>
 
                             {showSettings && (
-                                <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-white border border-gray-200 p-4 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.15)] flex flex-col gap-3 min-w-[200px] animate-in fade-in slide-in-from-bottom-2 duration-200 z-[1001]">
+                                <div className="absolute bottom-full mb-3 right-[-8px] sm:left-1/2 sm:-translate-x-1/2 sm:right-auto bg-white border border-gray-200 p-4 rounded-2xl shadow-[0_12px_48px_rgba(0,0,0,0.15)] flex flex-col gap-3 min-w-[200px] animate-in fade-in slide-in-from-bottom-2 duration-200 z-[1001]">
                                     <div className="flex items-center justify-between gap-4">
                                         <span className="text-[#4B5563] font-medium uppercase text-[0.65rem] tracking-wider">Physics</span>
                                         <input
